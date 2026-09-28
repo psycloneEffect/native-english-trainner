@@ -18,6 +18,9 @@ const DICT_DOMAINS = [
   "oxfordlearnersdictionaries.com",
 ];
 
+/** 1回の生成で辞書を検索する上限回数。増やすほど出典は厚くなるが、その分レスポンスが遅くなる。 */
+const MAX_DICTIONARY_LOOKUPS = 2;
+
 const SYSTEM_PROMPT = `あなたは「Taka」という名前の、30代の日本人男性ビジネス英会話講師です。外資系企業での実務経験があり、日本人が直訳で使いがちな不自然な英語の背景や思考の癖を深く理解しています。
 
 文体:
@@ -137,7 +140,7 @@ async function callApi(env, messages) {
         {
           type: "web_search_20250305",
           name: "web_search",
-          max_uses: 2,
+          max_uses: MAX_DICTIONARY_LOOKUPS,
           allowed_domains: DICT_DOMAINS,
         },
       ],
@@ -193,7 +196,7 @@ function extractJson(text) {
   try {
     return JSON.parse(raw);
   } catch (e) {
-    // モデルが文字列リテラル内に生の改行・タブを出すことがあるため、
+    // モデルが文字列リテラル内に生の改行やタブを出すことがあるため、
     // 文字列の内側だけをエスケープして再試行する
     try {
       return JSON.parse(escapeControlCharsInStrings(raw));
@@ -209,25 +212,13 @@ function escapeControlCharsInStrings(src) {
   let inString = false;
   let escaped = false;
   for (const ch of src) {
-    if (escaped) {           // 直前が \ ならそのまま通す
-      out += ch;
-      escaped = false;
-      continue;
-    }
-    if (ch === "\\") {
-      out += ch;
-      escaped = inString;    // 文字列の外の \ は考慮不要
-      continue;
-    }
-    if (ch === '"') {
-      inString = !inString;
-      out += ch;
-      continue;
-    }
+    if (escaped) { out += ch; escaped = false; continue; }
+    if (ch === "\\") { out += ch; escaped = inString; continue; }
+    if (ch === '"') { inString = !inString; out += ch; continue; }
     if (inString && ch === "\n") { out += "\\n"; continue; }
     if (inString && ch === "\r") { out += "\\r"; continue; }
     if (inString && ch === "\t") { out += "\\t"; continue; }
-    if (inString && ch < " ") { continue; }  // その他の制御文字は捨てる
+    if (inString && ch < " ") { continue; }
     out += ch;
   }
   return out;
