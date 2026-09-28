@@ -137,7 +137,7 @@ async function callApi(env, messages) {
         {
           type: "web_search_20250305",
           name: "web_search",
-          max_uses: 5,
+          max_uses: 2,
           allowed_domains: DICT_DOMAINS,
         },
       ],
