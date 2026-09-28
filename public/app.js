@@ -197,17 +197,17 @@
           <${ClearButton} show=${!!situation && !busy} label="シチュエーション" onClear=${() => setSituation("")} />
         </label>
 
-        <label class="field ok">
-          <span>ネイティブ表現</span>
-          <input value=${native} onInput=${(e) => setNative(e.target.value)} placeholder="Way to go!" autocomplete="off" spellcheck="false" />
-          <${ClearButton} show=${!!native && !busy} label="ネイティブ表現" onClear=${() => setNative("")} />
+        <label class="field ng">
+          <span>つい言ってしまう表現</span>
+          <input value=${ng} onInput=${(e) => setNg(e.target.value)} placeholder="Oh great." autocomplete="off" spellcheck="false" />
+          <${ClearButton} show=${!!ng && !busy} label="NG表現" onClear=${() => setNg("")} />
         </label>
 
-        <label class="field ng">
-          <span>日本人がやりがちなNG表現</span>
-          <input value=${ng} onInput=${(e) => setNg(e.target.value)} placeholder="Oh great." autocomplete="off" spellcheck="false"
+        <label class="field ok">
+          <span>ネイティブならこう言う</span>
+          <input value=${native} onInput=${(e) => setNative(e.target.value)} placeholder="Way to go!" autocomplete="off" spellcheck="false"
             onKeyDown=${(e) => { if (e.key === "Enter" && canAsk) ask(); }} />
-          <${ClearButton} show=${!!ng && !busy} label="NG表現" onClear=${() => setNg("")} />
+          <${ClearButton} show=${!!native && !busy} label="ネイティブ表現" onClear=${() => setNative("")} />
         </label>
 
         <div class="row">
