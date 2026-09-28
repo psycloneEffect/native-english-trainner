@@ -189,11 +189,48 @@ function extractJson(text) {
   if (start === -1 || end <= start) {
     throw { status: 502, code: "invalid_json", message: "no JSON object found" };
   }
+  const raw = stripped.slice(start, end + 1);
   try {
-    return JSON.parse(stripped.slice(start, end + 1));
+    return JSON.parse(raw);
   } catch (e) {
-    throw { status: 502, code: "invalid_json", message: e.message };
+    // モデルが文字列リテラル内に生の改行・タブを出すことがあるため、
+    // 文字列の内側だけをエスケープして再試行する
+    try {
+      return JSON.parse(escapeControlCharsInStrings(raw));
+    } catch (e2) {
+      throw { status: 502, code: "invalid_json", message: e2.message };
+    }
   }
+}
+
+/** JSON文字列リテラルの内側にある生の制御文字を \n / \t などに変換する */
+function escapeControlCharsInStrings(src) {
+  let out = "";
+  let inString = false;
+  let escaped = false;
+  for (const ch of src) {
+    if (escaped) {           // 直前が \ ならそのまま通す
+      out += ch;
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      out += ch;
+      escaped = inString;    // 文字列の外の \ は考慮不要
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      out += ch;
+      continue;
+    }
+    if (inString && ch === "\n") { out += "\\n"; continue; }
+    if (inString && ch === "\r") { out += "\\r"; continue; }
+    if (inString && ch === "\t") { out += "\\t"; continue; }
+    if (inString && ch < " ") { continue; }  // その他の制御文字は捨てる
+    out += ch;
+  }
+  return out;
 }
 
 function missingFields(d) {
