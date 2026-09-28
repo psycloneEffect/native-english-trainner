@@ -222,6 +222,21 @@
         </div>
       </section>`}
     </div>`;
+     
+     function clearAll() {
+      setSituation("");
+      setNative("");
+      setNg("");
+      setOutput(null);
+      setStatus({ text: "", err: false });
+    }
+
+    function clearPhrases() {
+      setNative("");
+      setNg("");
+      setOutput(null);
+      setStatus({ text: "", err: false });
+    }
   }
 
   ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
