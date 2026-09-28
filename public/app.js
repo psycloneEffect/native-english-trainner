@@ -90,6 +90,28 @@
     upstream_error: "Claude APIの呼び出しに失敗しました。",
   };
 
+  // ---------- 部品 ----------
+  /** ヒーロー。NGの吹き出しとOKの吹き出しが入れ替わる様子を示す */
+  function Hero() {
+    return html`<svg class="art" viewBox="0 0 96 96" width="96" height="96" role="img"
+      aria-label="NGの吹き出しがOKの吹き出しに変わる様子">
+      <path d="M6 14h52a6 6 0 0 1 6 6v22a6 6 0 0 1-6 6H26l-12 10V48H6a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z"
+        transform="translate(4 2)" fill="var(--ng-soft)" stroke="var(--ng)" stroke-width="2.5" stroke-linejoin="round" />
+      <line x1="16" y1="26" x2="52" y2="38" stroke="var(--ng)" stroke-width="3" stroke-linecap="round" />
+      <path d="M38 44h46a6 6 0 0 1 6 6v24a6 6 0 0 1-6 6H62L50 92V80H38a6 6 0 0 1-6-6V50a6 6 0 0 1 6-6z"
+        fill="var(--leaf-soft)" stroke="var(--leaf)" stroke-width="2.5" stroke-linejoin="round" />
+      <path d="M48 62l8 8 16-16" fill="none" stroke="var(--leaf)" stroke-width="4"
+        stroke-linecap="round" stroke-linejoin="round" />
+    </svg>`;
+  }
+
+  /** 入力欄の右端に出るクリアボタン */
+  function ClearButton(props) {
+    if (!props.show) return null;
+    return html`<button type="button" class="clear-btn" aria-label=${props.label + "を消す"}
+      onClick=${(e) => { e.preventDefault(); props.onClear(); }}>✕</button>`;
+  }
+
   // ---------- 画面 ----------
   function App() {
     const [situation, setSituation] = useState("");
@@ -116,7 +138,7 @@
       const ctl = new AbortController();
       ctlRef.current = ctl;
       setBusy(true);
-      setStatus({ text: "Takaが辞書を確認しながら書いています…（1〜2分かかることがあります）", err: false });
+      setStatus({ text: "辞書を確認しながら書いています…（30秒〜1分ほど）", err: false, busy: true });
       try {
         const res = await fetch("/api/generate", {
           method: "POST",
@@ -160,8 +182,11 @@
     return html`
     <div class="wrap">
       <header>
-        <h1>Taka, Biz-English Trainer</h1>
-        <p>場面・ネイティブ表現・NG表現を入れると、印象の違いまで含めた教材用のMarkdownを作ります。</p>
+        <${Hero} />
+        <div>
+          <h1>その一言、相手にはこう聞こえています</h1>
+          <p>場面とNG表現を入れると、ネイティブの言い方と受け取られ方の違いを1枚のノートにまとめます。</p>
+        </div>
       </header>
 
       <div class="sheet">
@@ -169,17 +194,20 @@
           <span>どんなシチュエーションですか？</span>
           <textarea rows="2" value=${situation} onInput=${(e) => setSituation(e.target.value)}
             placeholder="例: 難関資格に苦労して合格した同僚から「I finally passed!」と報告された"></textarea>
+          <${ClearButton} show=${!!situation && !busy} label="シチュエーション" onClear=${() => setSituation("")} />
         </label>
 
         <label class="field ok">
           <span>ネイティブ表現</span>
           <input value=${native} onInput=${(e) => setNative(e.target.value)} placeholder="Way to go!" autocomplete="off" spellcheck="false" />
+          <${ClearButton} show=${!!native && !busy} label="ネイティブ表現" onClear=${() => setNative("")} />
         </label>
 
         <label class="field ng">
           <span>日本人がやりがちなNG表現</span>
           <input value=${ng} onInput=${(e) => setNg(e.target.value)} placeholder="Oh great." autocomplete="off" spellcheck="false"
             onKeyDown=${(e) => { if (e.key === "Enter" && canAsk) ask(); }} />
+          <${ClearButton} show=${!!ng && !busy} label="NG表現" onClear=${() => setNg("")} />
         </label>
 
         <div class="row">
@@ -194,12 +222,15 @@
               }} />
           </label>
           <button class="ghost" onClick=${() => { setNo(1); saveNo(1); setNoText("001"); }} disabled=${busy || no === 1}>001に戻す</button>
+          <div class="spacer"></div>
           ${busy
             ? html`<button class="ghost" onClick=${() => ctlRef.current && ctlRef.current.abort()}>停止</button>`
             : html`<button onClick=${ask} disabled=${!canAsk}>Ask</button>`}
         </div>
 
-        <div class=${"status" + (status.err ? " err" : "")} role="status" aria-live="polite">${status.text}</div>
+        <div class=${"status" + (status.err ? " err" : "")} role="status" aria-live="polite">
+          ${status.busy ? html`<span class="spin"></span>` : null}${status.text}
+        </div>
       </div>
 
       ${output && html`
@@ -219,24 +250,10 @@
         <div class="actions">
           <button onClick=${download}>Markdownをダウンロード</button>
           <button class="ghost" onClick=${ask} disabled=${!canAsk}>作り直す</button>
+          <button class="ghost" onClick=${() => setOutput(null)} disabled=${busy}>閉じる</button>
         </div>
       </section>`}
     </div>`;
-     
-     function clearAll() {
-      setSituation("");
-      setNative("");
-      setNg("");
-      setOutput(null);
-      setStatus({ text: "", err: false });
-    }
-
-    function clearPhrases() {
-      setNative("");
-      setNg("");
-      setOutput(null);
-      setStatus({ text: "", err: false });
-    }
   }
 
   ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
