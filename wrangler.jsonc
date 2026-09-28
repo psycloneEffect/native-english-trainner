@@ -1,0 +1,17 @@
+{
+  "name": "taka-trainer",
+  "main": "worker/index.js",
+  "compatibility_date": "2025-02-01",
+  "assets": {
+    // public/ をそのまま配信する。ビルド不要。
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "vars": {
+    "MODEL": "claude-sonnet-5",
+    "REQUIRE_ACCESS": "false"
+  }
+  // ANTHROPIC_API_KEY はダッシュボードの Settings > Variables and Secrets で
+  // Secret として登録する（このファイルには書かない）
+}
