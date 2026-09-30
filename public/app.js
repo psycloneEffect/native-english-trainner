@@ -37,7 +37,7 @@
     return "";
   }
 
-  function toMarkdown(d, situation, nativeInput) {
+  function toMarkdown(d, situation) {
     const L = [];
     L.push("**シチュエーション:** " + cell(situation), "", d.lead.trim(), "");
 
@@ -56,7 +56,7 @@
     if (im.listener && im.listener.trim()) L.push("聞き手: " + cell(im.listener), "");
     L.push("| 言い方 | 相手が受ける印象 |", "| --- | --- |");
     L.push("| ❌ " + code(cell(ngList[0])) + " | " + cell(im.ng) + " |");
-    L.push("| ⭕️ " + code(cell(nativeInput)) + " | " + cell(im.native) + " |");
+    L.push("| ⭕️ " + code(cell(d.native)) + " | " + cell(im.native) + " |");
     if (im.gap && im.gap.trim()) L.push("", "**差が生むもの:** " + cell(im.gap));
 
     L.push("", "### ⭕️ ネイティブが使う自然なOKフレーズ", "");
@@ -82,7 +82,7 @@
   // ---------- エラー文言 ----------
   const ERR = {
     unauthorized: "認証が必要です。ページを再読み込みしてログインし直してください。",
-    invalid_input: "3つの入力欄をすべて埋めてください。",
+    invalid_input: "シチュエーションと、つい言ってしまう表現を入力してください。",
     rate_limited: "APIの利用上限に達しました。時間を置いて再実行してください。",
     invalid_json: "生成結果の形式が不正でした。もう一度Askしてください。",
     empty_completion: "回答が空でした。入力を見直してください。",
@@ -125,7 +125,7 @@
     const [view, setView] = useState("preview");
     const ctlRef = useRef(null);
 
-    const canAsk = !busy && situation.trim() && native.trim() && ng.trim();
+    const canAsk = !busy && situation.trim() && ng.trim();
 
     const preview = useMemo(() => {
       if (!output) return "";
@@ -151,7 +151,7 @@
           const c = body.error || String(res.status);
           throw new Error((ERR[c] || "エラーが発生しました。") + "（code: " + c + (body.message ? " / " + body.message : "") + "）");
         }
-        const md = toMarkdown(body.result, situation.trim(), native.trim());
+        const md = toMarkdown(body.result, situation.trim());
         setOutput({ md: md, filename: pad3(no) + "_" + safeTitle(body.result.file_title) + ".md" });
         setView("preview");
         setStatus({ text: "", err: false });
@@ -204,8 +204,8 @@
         </label>
 
         <label class="field ok">
-          <span>ネイティブならこう言う</span>
-          <input value=${native} onInput=${(e) => setNative(e.target.value)} placeholder="Way to go!" autocomplete="off" spellcheck="false"
+          <span>ネイティブならこう言う<span class="opt">空欄なら探します</span></span>
+          <input value=${native} onInput=${(e) => setNative(e.target.value)} placeholder="" autocomplete="off" spellcheck="false"
             onKeyDown=${(e) => { if (e.key === "Enter" && canAsk) ask(); }} />
           <${ClearButton} show=${!!native && !busy} label="ネイティブ表現" onClear=${() => setNative("")} />
         </label>
