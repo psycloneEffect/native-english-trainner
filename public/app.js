@@ -204,7 +204,7 @@
         </label>
 
         <label class="field ok">
-          <span>ネイティブならこう言う<span class="opt">空欄なら探します</span></span>
+          <span>ネイティブならこう言う<span class="opt"> (空欄の場合、適切な表現を探します。) </span></span>
           <input value=${native} onInput=${(e) => setNative(e.target.value)} placeholder="" autocomplete="off" spellcheck="false"
             onKeyDown=${(e) => { if (e.key === "Enter" && canAsk) ask(); }} />
           <${ClearButton} show=${!!native && !busy} label="ネイティブ表現" onClear=${() => setNative("")} />
