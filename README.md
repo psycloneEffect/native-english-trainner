@@ -1,4 +1,4 @@
-# Taka, Biz-English Trainer（ビルド不要版）
+# Native Biz-English Trainer（ビルド不要版）
 
 ローカル環境不要。GitHubとCloudflareのダッシュボードだけでデプロイできる。
 
@@ -77,15 +77,50 @@ web search はAPIでは既定で有効。管理者が無効化していない限
 
 ---
 
+## バージョン管理
+
+現在: **v0.4.0**（変更履歴は [CHANGELOG.md](./CHANGELOG.md)）
+
+採番は Semantic Versioning に準拠する。所内限定の内部ツールのため、`1.0.0` までは
+仕様変更を破壊的変更として扱わない。`1.0.0` は「ログインとトークン制限が入り、
+自分以外も常用できる状態」とする。
+
+| 変更の種類 | 上げる桁 | 例 |
+|---|---|---|
+| 出力Markdownの構成変更、互換性のない仕様変更 | MINOR（1.0.0 以降は MAJOR） | 項目の追加・削除 |
+| 機能追加、UI改訂 | MINOR | クリアボタンの追加 |
+| バグ修正、文言調整、プロンプトの微修正 | PATCH | JSONパースの修正 |
+
+バージョンは2か所に持つ。**必ず同じ値に揃えてコミットすること。**
+
+- `worker/index.js` の `WORKER_VERSION`
+- `public/app.js` の `APP_VERSION`
+
+画面右下に `v0.4.0 / api 0.4.0` と表示される。両者が食い違う場合は、
+ブラウザが古いJSをキャッシュしているか、デプロイが失敗している。
+不一致時は画面上部に警告が出る。
+
+### リリース手順（ブラウザのみ）
+
+1. 2つの定数と `CHANGELOG.md` を更新してコミット
+2. Cloudflare のデプロイ完了を確認
+3. GitHub の Releases → Draft a new release
+4. Choose a tag に `v0.4.0` を入力して「Create new tag」
+5. 本文に CHANGELOG の該当節を貼って Publish
+
+タグを打っておくと、デプロイが壊れたときに動作していた時点のZIPをブラウザから取得できる。
+
+---
+
 ## カスタマイズ
 
-| 目的                   | 変更箇所                                                                              |
-| ---------------------- | ------------------------------------------------------------------------------------- |
-| モデル変更             | `wrangler.jsonc` の `vars.MODEL`                                                      |
-| 講師の口調・出典ルール | `worker/index.js` の `SYSTEM_PROMPT`                                                  |
-| 出力項目の追加         | `worker/index.js` の `buildUserPrompt` 内のJSON定義 → `public/app.js` の `toMarkdown` |
-| Markdownの体裁         | `public/app.js` の `toMarkdown`                                                       |
-| 検索対象の辞書         | `worker/index.js` の `DICT_DOMAINS`                                                   |
+| 目的 | 変更箇所 |
+|---|---|
+| モデル変更 | `wrangler.jsonc` の `vars.MODEL` |
+| 講師の口調・出典ルール | `worker/index.js` の `SYSTEM_PROMPT` |
+| 出力項目の追加 | `worker/index.js` の `buildUserPrompt` 内のJSON定義 → `public/app.js` の `toMarkdown` |
+| Markdownの体裁 | `public/app.js` の `toMarkdown` |
+| 検索対象の辞書 | `worker/index.js` の `DICT_DOMAINS` |
 
 ## 制約
 
