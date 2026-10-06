@@ -1,9 +1,12 @@
-/* Taka, Biz-English Trainer — フロントエンド（ビルド不要）
+/* Native Biz-English Trainer — フロントエンド（ビルド不要）
    React は UMD、JSX の代わりに htm を使う。 */
 (function () {
   const { useState, useRef, useMemo } = React;
   const html = htm.bind(React.createElement);
   const NO_KEY = "taka-next-no";
+
+  /** 画面側のバージョン。worker/index.js の WORKER_VERSION と対で更新する。 */
+  const APP_VERSION = "0.4.0";
 
   // ---------- 連番 ----------
   function loadNo() {
@@ -123,6 +126,7 @@
     const [status, setStatus] = useState({ text: "", err: false });
     const [output, setOutput] = useState(null);
     const [view, setView] = useState("preview");
+    const [apiVersion, setApiVersion] = useState(null);
     const ctlRef = useRef(null);
 
     const canAsk = !busy && situation.trim() && ng.trim();
@@ -147,6 +151,7 @@
           signal: ctl.signal,
         });
         const body = await res.json();
+        setApiVersion(res.headers.get("x-app-version") || body.version || null);
         if (!res.ok || !body.result) {
           const c = body.error || String(res.status);
           throw new Error((ERR[c] || "エラーが発生しました。") + "（code: " + c + (body.message ? " / " + body.message : "") + "）");
@@ -204,7 +209,7 @@
         </label>
 
         <label class="field ok">
-          <span>ネイティブならこう言う<span class="opt"> (空欄の場合、適切な表現を探します。) </span></span>
+          <span>ネイティブならこう言う<span class="opt">空欄なら探します</span></span>
           <input value=${native} onInput=${(e) => setNative(e.target.value)} placeholder="" autocomplete="off" spellcheck="false"
             onKeyDown=${(e) => { if (e.key === "Enter" && canAsk) ask(); }} />
           <${ClearButton} show=${!!native && !busy} label="ネイティブ表現" onClear=${() => setNative("")} />
@@ -233,6 +238,10 @@
         </div>
       </div>
 
+      ${apiVersion && apiVersion !== APP_VERSION && html`
+      <p class="version-warn">画面 v${APP_VERSION} とサーバー v${apiVersion} の版が一致していません。
+        ブラウザの再読み込み（Ctrl+Shift+R）を試してください。</p>`}
+
       ${output && html`
       <section class="result">
         <div class="result-head">
@@ -253,6 +262,7 @@
           <button class="ghost" onClick=${() => setOutput(null)} disabled=${busy}>閉じる</button>
         </div>
       </section>`}
+      <footer class="ver">v${APP_VERSION}${apiVersion ? " / api " + apiVersion : ""}</footer>
     </div>`;
   }
 
