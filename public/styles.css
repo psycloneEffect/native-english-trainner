@@ -132,3 +132,8 @@ pre.raw{margin:0;white-space:pre-wrap;word-break:break-word;font-size:.85rem;lin
   display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;
   background:var(--leaf-soft);color:var(--leaf-dark);font-size:.72rem;font-weight:700;vertical-align:1px;
 }
+
+/* バージョン表示 */
+.ver{margin-top:28px;text-align:right;font-family:var(--en);font-size:.75rem;color:var(--muted);opacity:.7}
+.version-warn{margin-top:14px;padding:10px 14px;border-radius:10px;
+  background:var(--ng-soft);color:var(--ng);font-size:.85rem;line-height:1.6}
