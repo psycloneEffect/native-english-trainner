@@ -1,10 +1,13 @@
 /**
- * Taka, Biz-English Trainer — Cloudflare Worker
+ * Native English Trainer — Cloudflare Worker
  * ビルド不要。このファイルはそのままデプロイされる。
  *
  * - /api/generate : Claude Messages API を呼び、教材1件分のJSONを返す
  * - それ以外       : public/ の静的ファイルを返す
  */
+
+/** このWorkerのバージョン。public/app.js の APP_VERSION と対で更新する。 */
+const WORKER_VERSION = "0.4.0";
 
 const API_URL = "https://api.anthropic.com/v1/messages";
 const MAX_INPUT_LEN = 400;
@@ -80,7 +83,10 @@ standard.en と formal.en の少なくとも一方には、"native" に入れた
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "x-app-version": WORKER_VERSION,
+    },
   });
 
 export default {
@@ -108,7 +114,7 @@ export default {
 
     try {
       const result = await generate(input, env);
-      return json({ result });
+      return json({ result, version: WORKER_VERSION });
     } catch (e) {
       console.error("generate failed", e);
       const status = e && e.status ? e.status : 502;
