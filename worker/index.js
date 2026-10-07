@@ -1,5 +1,5 @@
 /**
- * Native English Trainer — Cloudflare Worker
+ * Native Biz-English Trainer — Cloudflare Worker
  * ビルド不要。このファイルはそのままデプロイされる。
  *
  * - /api/generate : Claude Messages API を呼び、教材1件分のJSONを返す
