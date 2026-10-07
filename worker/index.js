@@ -6,6 +6,8 @@
  * - それ以外       : public/ の静的ファイルを返す
  */
 
+import { schemaBlock, missingFields, toMarkdown } from "../public/shared/schema.js";
+
 /** このWorkerのバージョン。public/app.js の APP_VERSION と対で更新する。 */
 const WORKER_VERSION = "0.4.0";
 
@@ -60,22 +62,7 @@ ${input.native
 - 入力の意図が曖昧な場合は、どう解釈したかを why_ng の冒頭で明示してください。
 
 次の形のJSONオブジェクト1つだけを返してください:
-{
-  "file_title": "場面を表す日本語の短い見出し（15文字程度、記号なし。例: 相手の成功を祝う表現）",
-  "native": "この場面で採用するネイティブ表現1つ。native が指定されていればその文字列をそのまま入れる。未指定ならあなたが選んだ表現を入れる",
-  "lead": "この場面でその表現がなぜ良いのかを1〜2文で",
-  "ng_phrases": ["1件目は入力のNG表現そのまま。似たNG表現があれば最大2件まで追加"],
-  "why_ng": "2〜3段落。段落の区切りは \\n\\n（JSON文字列としてエスケープした改行）で表す。生の改行を文字列に含めないこと",
-  "impression": {
-    "listener": "この場面の聞き手を短く（例: 難関資格に合格した同僚）",
-    "ng": "ng表現を言われた相手が受ける印象・心の声を1〜2文で",
-    "native": "native表現を言われた相手が受ける印象・心の声を1〜2文で",
-    "gap": "両者の印象差が関係や評価にどう影響しうるかを1文で"
-  },
-  "standard": { "en": "同僚や普段のやり取りでの英語フレーズ", "ja": "日本語訳" },
-  "formal": { "en": "上司や顧客向けの丁寧な英語フレーズ", "ja": "日本語訳" },
-  "sources": [{ "name": "辞書名", "keyword": "見出し語", "url": "確認できたURL", "note": "要約。未確認なら末尾に（未検証）" }]
-}
+${schemaBlock()}
 
 standard.en と formal.en の少なくとも一方には、"native" に入れた表現をそのまま含めてください。`;
 }
@@ -114,7 +101,10 @@ export default {
 
     try {
       const result = await generate(input, env);
-      return json({ result, version: WORKER_VERSION });
+      // Markdown の体裁はサーバー側を正本とする。
+      // 画面以外（CLI や他ツール）から叩いても同じ出力が得られる。
+      const markdown = toMarkdown(result, input.situation);
+      return json({ result, markdown, version: WORKER_VERSION });
     } catch (e) {
       console.error("generate failed", e);
       const status = e && e.status ? e.status : 502;
@@ -234,17 +224,4 @@ function escapeControlCharsInStrings(src) {
     out += ch;
   }
   return out;
-}
-
-function missingFields(d) {
-  const s = (v) => typeof v === "string" && v.trim().length > 0;
-  if (!d || typeof d !== "object") return ["(not an object)"];
-  const m = [];
-  ["file_title", "native", "lead", "why_ng"].forEach((k) => { if (!s(d[k])) m.push(k); });
-  if (!Array.isArray(d.ng_phrases) || !d.ng_phrases.some(s)) m.push("ng_phrases");
-  ["standard", "formal"].forEach((k) => {
-    if (!d[k] || !s(d[k].en) || !s(d[k].ja)) m.push(k);
-  });
-  if (!d.impression || !s(d.impression.ng) || !s(d.impression.native)) m.push("impression");
-  return m;
 }
