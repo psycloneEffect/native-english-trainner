@@ -18,7 +18,7 @@ import { normalize } from "./input.js";
 import { checkAccess } from "./auth.js";
 
 /** このWorkerのバージョン。public/app.js の APP_VERSION と対で更新する。 */
-const WORKER_VERSION = "0.4.0";
+const WORKER_VERSION = "0.5.0";
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
