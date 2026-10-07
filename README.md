@@ -3,19 +3,21 @@
 ローカル環境不要。GitHubとCloudflareのダッシュボードだけでデプロイできる。
 
 ```
-public/index.html   画面。React は CDN から読み込むためビルド不要
-public/app.js       画面のロジック。JSXの代わりに htm を使用
-public/styles.css   スタイル
-worker/index.js     APIキーを保持し Claude Messages API を呼ぶ中継
-wrangler.jsonc      Worker の設定
+public/index.html        画面。React は CDN から読み込むためビルド不要
+public/app.js            画面のロジック。JSXの代わりに htm を使用（ESモジュール）
+public/styles.css        スタイル
+public/shared/schema.js  出力スキーマ・検証・Markdown組み立ての正本（Worker と画面で共有）
+worker/index.js          APIキーを保持し Claude Messages API を呼ぶ中継
+wrangler.jsonc           Worker の設定
 ```
 
 リクエストの流れ:
 
 ```
-ブラウザ → POST /api/generate {situation, native, ng}
+ブラウザ → POST /api/generate {situation, ng, native?}
         → Worker（Secretのキーを付与）→ Claude Messages API + web_search（辞書4サイト限定）
-        → JSON を返す → ブラウザで Markdown を組み立ててダウンロード
+        → Worker が Markdown まで組み立てて {result, markdown, version} を返す
+        → ブラウザは連番を付けてダウンロード
 ```
 
 プロンプトは Worker 側にあり、フロントから送るのは3つの値だけ。
@@ -118,9 +120,24 @@ web search はAPIでは既定で有効。管理者が無効化していない限
 |---|---|
 | モデル変更 | `wrangler.jsonc` の `vars.MODEL` |
 | 講師の口調・出典ルール | `worker/index.js` の `SYSTEM_PROMPT` |
-| 出力項目の追加 | `worker/index.js` の `buildUserPrompt` 内のJSON定義 → `public/app.js` の `toMarkdown` |
-| Markdownの体裁 | `public/app.js` の `toMarkdown` |
+| 出力項目の追加 | `public/shared/schema.js` の `SCHEMA`（必要なら `toMarkdown` に出力位置を追記） |
+| Markdownの体裁 | `public/shared/schema.js` の `toMarkdown` |
 | 検索対象の辞書 | `worker/index.js` の `DICT_DOMAINS` |
+
+## API
+
+`POST /api/generate`
+
+```json
+{ "situation": "必須。誰にどんな状況で言うか", "ng": "必須。つい言ってしまう表現", "native": "任意。空ならモデルが選ぶ" }
+```
+
+```json
+{ "result": { "...": "構造化データ" }, "markdown": "教材本文", "version": "0.4.0" }
+```
+
+Markdown はサーバー側で組み立てるため、画面以外から叩いても同じ出力が得られる。
+エラー時は `{ "error": "code", "message": "詳細" }` を返す。
 
 ## 制約
 
