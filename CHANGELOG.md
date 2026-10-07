@@ -6,11 +6,30 @@
 所内限定の内部ツールのため、`1.0.0` までは仕様変更を破壊的変更として扱わない。
 `1.0.0` は「ログインとトークン制限が入り、自分以外も常用できる状態」を基準とする。
 
+`0.5.0` が最初にタグを打ったリリース。`0.1.0` から `0.4.0` は開発中の区切りとして
+さかのぼって記録したもので、対応するタグは存在しない。
+
 ## [Unreleased]
 
 ### 追加予定
 - ログイン機能（Cloudflare Access のIDをWorkerで参照）
 - ユーザー単位のトークン/実行回数の上限（自分以外に適用）
+- Claude API 呼び出しのタイムアウト（課題3）
+
+## [0.5.0] - 2026-10-07
+
+### 追加
+- `/api/generate` が組み立て済みの `markdown` と `version` を返す（課題2）。
+  画面以外のクライアントから叩いても同じ出力が得られる
+- 画面とAPIのバージョン表示、および不一致の警告
+
+### 変更
+- 出力スキーマ・検証・Markdown組み立てを `public/shared/schema.js` に集約（課題1）。
+  項目の追加・変更はこの1ファイルで完結する
+- `public/app.js` を ES モジュール化（`<script type="module">`）
+- Markdown の組み立てを画面から Worker 側へ移動（課題2）。画面側の組み立ては版ずれ時の保険として残す
+- `worker/index.js` を責務ごとに分割（claude.js / prompt.js / input.js / auth.js）。
+  index.js はルーティングとレスポンス整形のみを持つ
 
 ## [0.4.0] - 2026-10-06
 
@@ -47,8 +66,5 @@
 - Claude Messages API + web_search（辞書4サイトに限定）による教材生成
 - Markdown のダウンロードと連番付与
 
-[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.4.0...HEAD
-[0.4.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.4.0
-[0.3.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.3.0
-[0.2.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.2.0
-[0.1.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.1.0
+[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.5.0

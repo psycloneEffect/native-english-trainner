@@ -7,7 +7,11 @@ public/index.html        画面。React は CDN から読み込むためビル�
 public/app.js            画面のロジック。JSXの代わりに htm を使用（ESモジュール）
 public/styles.css        スタイル
 public/shared/schema.js  出力スキーマ・検証・Markdown組み立ての正本（Worker と画面で共有）
-worker/index.js          APIキーを保持し Claude Messages API を呼ぶ中継
+worker/index.js          ルーティングとレスポンス整形
+worker/claude.js         Claude API の呼び出し、pause_turn の継続、JSON の取り出し
+worker/prompt.js         システムプロンプトと指示文
+worker/input.js          リクエストの正規化と検証
+worker/auth.js           アクセス制御（Cloudflare Access の補助）
 wrangler.jsonc           Worker の設定
 ```
 
@@ -81,7 +85,7 @@ web search はAPIでは既定で有効。管理者が無効化していない限
 
 ## バージョン管理
 
-現在: **v0.4.0**（変更履歴は [CHANGELOG.md](./CHANGELOG.md)）
+現在: **v0.5.0**（変更履歴は [CHANGELOG.md](./CHANGELOG.md)）
 
 採番は Semantic Versioning に準拠する。所内限定の内部ツールのため、`1.0.0` までは
 仕様変更を破壊的変更として扱わない。`1.0.0` は「ログインとトークン制限が入り、
@@ -98,7 +102,7 @@ web search はAPIでは既定で有効。管理者が無効化していない限
 - `worker/index.js` の `WORKER_VERSION`
 - `public/app.js` の `APP_VERSION`
 
-画面右下に `v0.4.0 / api 0.4.0` と表示される。両者が食い違う場合は、
+画面右下に `v0.5.0 / api 0.5.0` と表示される。両者が食い違う場合は、
 ブラウザが古いJSをキャッシュしているか、デプロイが失敗している。
 不一致時は画面上部に警告が出る。
 
@@ -107,7 +111,7 @@ web search はAPIでは既定で有効。管理者が無効化していない限
 1. 2つの定数と `CHANGELOG.md` を更新してコミット
 2. Cloudflare のデプロイ完了を確認
 3. GitHub の Releases → Draft a new release
-4. Choose a tag に `v0.4.0` を入力して「Create new tag」
+4. Choose a tag に `v0.5.0` を入力して「Create new tag」
 5. 本文に CHANGELOG の該当節を貼って Publish
 
 タグを打っておくと、デプロイが壊れたときに動作していた時点のZIPをブラウザから取得できる。
@@ -119,10 +123,10 @@ web search はAPIでは既定で有効。管理者が無効化していない限
 | 目的 | 変更箇所 |
 |---|---|
 | モデル変更 | `wrangler.jsonc` の `vars.MODEL` |
-| 講師の口調・出典ルール | `worker/index.js` の `SYSTEM_PROMPT` |
+| 講師の口調・出典ルール | `worker/prompt.js` の `SYSTEM_PROMPT` |
 | 出力項目の追加 | `public/shared/schema.js` の `SCHEMA`（必要なら `toMarkdown` に出力位置を追記） |
 | Markdownの体裁 | `public/shared/schema.js` の `toMarkdown` |
-| 検索対象の辞書 | `worker/index.js` の `DICT_DOMAINS` |
+| 検索対象の辞書 | `worker/claude.js` の `DICT_DOMAINS` |
 
 ## API
 
@@ -133,7 +137,7 @@ web search はAPIでは既定で有効。管理者が無効化していない限
 ```
 
 ```json
-{ "result": { "...": "構造化データ" }, "markdown": "教材本文", "version": "0.4.0" }
+{ "result": { "...": "構造化データ" }, "markdown": "教材本文", "version": "0.5.0" }
 ```
 
 Markdown はサーバー側で組み立てるため、画面以外から叩いても同じ出力が得られる。
