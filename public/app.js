@@ -9,7 +9,7 @@ const html = htm.bind(React.createElement);
 const NO_KEY = "taka-next-no";
 
 /** 画面側のバージョン。worker/index.js の WORKER_VERSION と対で更新する。 */
-const APP_VERSION = "0.4.0";
+const APP_VERSION = "0.5.0";
 
 // ---------- 連番 ----------
 function loadNo() {
