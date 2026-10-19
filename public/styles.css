@@ -137,3 +137,17 @@ pre.raw{margin:0;white-space:pre-wrap;word-break:break-word;font-size:.85rem;lin
 .ver{margin-top:28px;text-align:right;font-family:var(--en);font-size:.75rem;color:var(--muted);opacity:.7}
 .version-warn{margin-top:14px;padding:10px 14px;border-radius:10px;
   background:var(--ng-soft);color:var(--ng);font-size:.85rem;line-height:1.6}
+
+/* ログイン画面 */
+.login-wrap{max-width:460px}
+.login-wrap .field input{font-size:1.05rem}
+.ver{display:flex;justify-content:space-between;align-items:center;gap:12px}
+button.link{background:transparent;border:0;padding:0;color:var(--muted);font-size:.78rem;font-weight:400;
+  text-decoration:underline;text-underline-offset:3px}
+button.link:hover:not(:disabled){color:var(--ink)}
+button.link:active:not(:disabled){transform:none}
+
+/* 残り実行回数 */
+.quota{font-family:var(--en);font-size:.8rem;font-weight:700;color:var(--muted);
+  padding:7px 12px;border-radius:99px;background:var(--leaf-soft)}
+.quota.low{color:var(--ng);background:var(--ng-soft)}

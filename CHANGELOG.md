@@ -12,9 +12,35 @@
 ## [Unreleased]
 
 ### 追加予定
-- ログイン機能（Cloudflare Access のIDをWorkerで参照）
-- ユーザー単位のトークン/実行回数の上限（自分以外に適用）
 - Claude API 呼び出しのタイムアウト（課題3）
+
+## [0.7.0] - 2026-10-13
+
+### 追加
+- KV による日次の実行回数制限（`worker/quota.js`）。全体（`DAILY_LIMIT`）と
+  端末ごと（`PER_CLIENT_LIMIT`）の2段構え。上限超過は 429 と `quota_exceeded`
+- 画面に本日の残り回数を表示。残り2回以下で警告色に変わる
+- `GET /api/session` と生成の応答に `quota` を含める
+
+### 変更
+- 実行回数の加算は Claude API 呼び出しの前に行う（失敗してもトークンは消費されるため）
+- KV が未設定の場合は生成を拒否する（`quota_not_configured`）。
+  設定漏れで上限なしに動くことを避けるため
+
+## [0.6.0] - 2026-10-13
+
+### 追加
+- ID／パスワードによるログイン機能。認証情報は Worker の Secret
+  （`APP_USERNAME` / `APP_PASSWORD` / `SESSION_SECRET`）から読む
+- セッションは HMAC 署名付きCookie（HttpOnly / Secure / SameSite=Strict、7日）で保持。
+  サーバー側に保存領域を持たず、`SESSION_SECRET` の差し替えで一斉失効できる
+- `POST /api/login`、`POST /api/logout`、`GET /api/session` を追加
+- 画面にログイン画面とログアウトボタンを追加。生成中に401が返るとログイン画面へ戻る
+
+### 変更
+- `/api/generate` はログイン済みセッションを必須にした
+- `worker/auth.js` を Cloudflare Access のヘッダ確認から、ログイン検証の実装に置き換え
+  （`REQUIRE_ACCESS` は廃止。Access はこの構成では Worker にJWTを渡さないため）
 
 ## [0.5.0] - 2026-10-07
 
@@ -66,5 +92,7 @@
 - Claude Messages API + web_search（辞書4サイトに限定）による教材生成
 - Markdown のダウンロードと連番付与
 
-[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.0
+[0.6.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.6.0
 [0.5.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.5.0

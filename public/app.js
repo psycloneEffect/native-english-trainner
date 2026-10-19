@@ -4,12 +4,12 @@
 import { toMarkdown, safeTitle, pad3 } from "/shared/schema.js";
 // toMarkdown は Worker が markdown を返さなかった場合の保険として残す
 
-const { useState, useRef, useMemo } = React;
+const { useState, useRef, useMemo, useEffect } = React;
 const html = htm.bind(React.createElement);
 const NO_KEY = "taka-next-no";
 
 /** 画面側のバージョン。worker/index.js の WORKER_VERSION と対で更新する。 */
-const APP_VERSION = "0.5.0";
+const APP_VERSION = "0.7.0";
 
 // ---------- 連番 ----------
 function loadNo() {
@@ -26,7 +26,10 @@ function saveNo(n) {
 
 // ---------- エラー文言 ----------
 const ERR = {
-  unauthorized: "認証が必要です。ページを再読み込みしてログインし直してください。",
+  unauthorized: "ログインの有効期限が切れました。もう一度ログインしてください。",
+  invalid_credentials: "IDまたはパスワードが違います。",
+  auth_not_configured: "サーバー側にログイン情報が設定されていません。",
+  quota_not_configured: "サーバー側に実行回数の設定（KV）がありません。",
   invalid_input: "シチュエーションと、つい言ってしまう表現を入力してください。",
   rate_limited: "APIの利用上限に達しました。時間を置いて再実行してください。",
   invalid_json: "生成結果の形式が不正でした。もう一度Askしてください。",
@@ -57,6 +60,67 @@ function ClearButton(props) {
     onClick=${(e) => { e.preventDefault(); props.onClear(); }}>✕</button>`;
 }
 
+/** ログイン画面 */
+function Login(props) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function submit(e) {
+    e.preventDefault();
+    if (busy || !username.trim() || !password) return;
+    setBusy(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username: username.trim(), password }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(ERR[body.error] || "ログインに失敗しました。");
+      setPassword("");
+      props.onSuccess(res.headers.get("x-app-version") || body.version || null);
+    } catch (e2) {
+      setErr(e2.message);
+      setBusy(false);
+    }
+  }
+
+  return html`
+  <div class="wrap login-wrap">
+    <header>
+      <${Hero} />
+      <div>
+        <h1>Native Biz-English Trainer</h1>
+        <p>所内限定のツールです。ログインしてご利用ください。</p>
+      </div>
+    </header>
+
+    <form class="sheet" onSubmit=${submit}>
+      <label class="field">
+        <span>ID</span>
+        <input value=${username} onInput=${(e) => setUsername(e.target.value)}
+          autocomplete="username" autocapitalize="off" spellcheck="false" />
+      </label>
+      <label class="field">
+        <span>パスワード</span>
+        <input type="password" value=${password} onInput=${(e) => setPassword(e.target.value)}
+          autocomplete="current-password" />
+      </label>
+      <div class="row">
+        <div class="spacer"></div>
+        <button type="submit" disabled=${busy || !username.trim() || !password}>
+          ${busy ? "確認中…" : "ログイン"}
+        </button>
+      </div>
+      <div class=${"status" + (err ? " err" : "")} role="status" aria-live="polite">${err}</div>
+    </form>
+    <footer class="ver">v${APP_VERSION}</footer>
+  </div>`;
+}
+
 // ---------- 画面 ----------
 function App() {
   const [situation, setSituation] = useState("");
@@ -69,9 +133,33 @@ function App() {
   const [output, setOutput] = useState(null);
   const [view, setView] = useState("preview");
   const [apiVersion, setApiVersion] = useState(null);
+  const [authed, setAuthed] = useState(null); // null: 確認中
+  const [quota, setQuota] = useState(null);   // { client, total } 残り回数
   const ctlRef = useRef(null);
 
   const canAsk = !busy && situation.trim() && ng.trim();
+
+  // 起動時にログイン状態を確認する。Cookieは HttpOnly のため画面からは読めない。
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/session")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!alive) return;
+        setAuthed(!!d.authenticated);
+        if (d.version) setApiVersion(d.version);
+        if (d.quota) setQuota(d.quota);
+      })
+      .catch(() => alive && setAuthed(false));
+    return () => { alive = false; };
+  }, []);
+
+  async function logout() {
+    await fetch("/api/logout", { method: "POST" }).catch(() => {});
+    setAuthed(false);
+    setOutput(null);
+    setStatus({ text: "", err: false });
+  }
 
   const preview = useMemo(() => {
     if (!output) return "";
@@ -94,6 +182,21 @@ function App() {
       });
       const body = await res.json();
       setApiVersion(res.headers.get("x-app-version") || body.version || null);
+      if (body.quota) setQuota(body.quota);
+      if (res.status === 429 && body.error === "quota_exceeded") {
+        const reset = body.resetAt ? new Date(body.resetAt).toLocaleString("ja-JP", { hour: "2-digit", minute: "2-digit", month: "numeric", day: "numeric" }) : "明日";
+        setQuota({ client: 0, total: body.scope === "total" ? 0 : null });
+        throw new Error(
+          (body.scope === "total"
+            ? "本日の全体の実行回数の上限に達しました。"
+            : "本日のこの端末の実行回数の上限に達しました。") + reset + " に戻ります。"
+        );
+      }
+      if (res.status === 401) {
+        // セッション切れ。入力は残したままログイン画面へ戻す。
+        setAuthed(false);
+        throw new Error(ERR.unauthorized);
+      }
       if (!res.ok || !body.result) {
         const c = body.error || String(res.status);
         throw new Error((ERR[c] || "エラーが発生しました。") + "（code: " + c + (body.message ? " / " + body.message : "") + "）");
@@ -126,6 +229,13 @@ function App() {
     saveNo(next);
     setNoText(pad3(next));
     setStatus({ text: output.filename + " を保存しました。次の番号は " + pad3(next) + " です。", err: false });
+  }
+
+  if (authed === null) {
+    return html`<div class="wrap"><div class="status"><span class="spin"></span>読み込んでいます…</div></div>`;
+  }
+  if (!authed) {
+    return html`<${Login} onSuccess=${(v) => { setAuthed(true); if (v) setApiVersion(v); }} />`;
   }
 
   return html`
@@ -172,6 +282,8 @@ function App() {
         </label>
         <button class="ghost" onClick=${() => { setNo(1); saveNo(1); setNoText("001"); }} disabled=${busy || no === 1}>001に戻す</button>
         <div class="spacer"></div>
+        ${quota && typeof quota.client === "number" && html`
+          <span class=${"quota" + (quota.client <= 2 ? " low" : "")}>本日の残り ${quota.client} 回</span>`}
         ${busy
           ? html`<button class="ghost" onClick=${() => ctlRef.current && ctlRef.current.abort()}>停止</button>`
           : html`<button onClick=${ask} disabled=${!canAsk}>Ask</button>`}
@@ -206,7 +318,10 @@ function App() {
         <button class="ghost" onClick=${() => setOutput(null)} disabled=${busy}>閉じる</button>
       </div>
     </section>`}
-    <footer class="ver">v${APP_VERSION}${apiVersion ? " / api " + apiVersion : ""}</footer>
+    <footer class="ver">
+      <button class="link" onClick=${logout} disabled=${busy}>ログアウト</button>
+      <span>v${APP_VERSION}${apiVersion ? " / api " + apiVersion : ""}</span>
+    </footer>
   </div>`;
 }
 
