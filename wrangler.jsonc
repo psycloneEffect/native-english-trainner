@@ -16,9 +16,12 @@
   // 表示される Namespace ID を下に貼ってコメントを外す。IDは秘密情報ではない。
   // 有効にするまで、生成は quota_not_configured で停止する（上限なしで動くことを避けるため）。
   //
-  // "kv_namespaces": [
-  //   { "binding": "QUOTA", "id": "ここに Namespace ID を貼る" }
-  // ],
+  "kv_namespaces": [
+     { "binding": "QUOTA", "id": ""kv_namespaces": [{
+                    "binding": "KV_BINDING",
+                    "id": "c984207846054c8c9dab0723346ad3e1"
+                 }]" }
+  ],
 
   "vars": {
     "MODEL": "claude-sonnet-5",
