@@ -1,5 +1,7 @@
 {
-  "name": "taka-trainer",
+  // 公開URLになる名前。workers.dev のサブドメインがそのままこの値になる。
+  // 変更すると別のWorkerが新規作成され、Secretも引き継がれない。
+  "name": "native-english-trainner",
   "main": "worker/index.js",
   "compatibility_date": "2025-02-01",
   "assets": {
@@ -8,10 +10,27 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
+
+  // === 実行回数の上限（未設定） ===
+  // ダッシュボード → Storage & Databases → KV → Create a namespace で作成し、
+  // 表示される Namespace ID を下に貼ってコメントを外す。IDは秘密情報ではない。
+  // 有効にするまで、生成は quota_not_configured で停止する（上限なしで動くことを避けるため）。
+  //
+  // "kv_namespaces": [
+  //   { "binding": "QUOTA", "id": "ここに Namespace ID を貼る" }
+  // ],
+
   "vars": {
     "MODEL": "claude-sonnet-5",
-    "REQUIRE_ACCESS": "false"
+    // 1日あたりの実行回数。全体と、端末ごと。KVを有効にしてから効く。
+    "DAILY_LIMIT": "30",
+    "PER_CLIENT_LIMIT": "10"
   }
-  // ANTHROPIC_API_KEY はダッシュボードの Settings > Variables and Secrets で
-  // Secret として登録する（このファイルには書かない）
+
+  // 以下はダッシュボードの Settings > Variables and Secrets で Secret として登録する。
+  // このファイルには絶対に書かない（リポジトリに平文で残るため）。
+  //   ANTHROPIC_API_KEY  Claude Console の APIキー
+  //   APP_USERNAME       ログインID
+  //   APP_PASSWORD       ログインパスワード
+  //   SESSION_SECRET     セッション署名用のランダム文字列（32文字以上）
 }

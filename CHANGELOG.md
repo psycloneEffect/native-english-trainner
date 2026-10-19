@@ -6,7 +6,7 @@
 所内限定の内部ツールのため、`1.0.0` までは仕様変更を破壊的変更として扱わない。
 `1.0.0` は「ログインとトークン制限が入り、自分以外も常用できる状態」を基準とする。
 
-`0.5.0` が最初にタグを打ったリリース。`0.1.0` から `0.4.0` は開発中の区切りとして
+`0.7.0` が最初にタグを打ったリリース。`0.1.0` から `0.6.0` は開発中の区切りとして
 さかのぼって記録したもので、対応するタグは存在しない。
 
 ## [Unreleased]
@@ -94,5 +94,3 @@
 
 [Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.7.0...HEAD
 [0.7.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.0
-[0.6.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.6.0
-[0.5.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.5.0
