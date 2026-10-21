@@ -29,7 +29,7 @@ import {
 import { consume, peek } from "./quota.js";
 
 /** このWorkerのバージョン。public/app.js の APP_VERSION と対で更新する。 */
-const WORKER_VERSION = "0.7.0";
+const WORKER_VERSION = "0.7.1";
 
 const json = (body, status = 200, extraHeaders = {}) =>
   new Response(JSON.stringify(body), {

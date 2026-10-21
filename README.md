@@ -135,7 +135,7 @@ Namespace ID は秘密情報ではないので、リポジトリに書いて問�
 
 ## バージョン管理
 
-現在: **v0.7.0**（変更履歴は [CHANGELOG.md](./CHANGELOG.md)）
+現在: **v0.7.1**（変更履歴は [CHANGELOG.md](./CHANGELOG.md)）
 
 採番は Semantic Versioning に準拠する。所内限定の内部ツールのため、`1.0.0` までは
 仕様変更を破壊的変更として扱わない。`1.0.0` は「ログインとトークン制限が入り、
@@ -152,7 +152,7 @@ Namespace ID は秘密情報ではないので、リポジトリに書いて問�
 - `worker/index.js` の `WORKER_VERSION`
 - `public/app.js` の `APP_VERSION`
 
-画面右下に `v0.7.0 / api 0.7.0` と表示される。両者が食い違う場合は、
+画面右下に `v0.7.1 / api 0.7.1` と表示される。両者が食い違う場合は、
 ブラウザが古いJSをキャッシュしているか、デプロイが失敗している。
 不一致時は画面上部に警告が出る。
 
@@ -161,7 +161,7 @@ Namespace ID は秘密情報ではないので、リポジトリに書いて問�
 1. 2つの定数と `CHANGELOG.md` を更新してコミット
 2. Cloudflare のデプロイ完了を確認
 3. GitHub の Releases → Draft a new release
-4. Choose a tag に `v0.7.0` を入力して「Create new tag」
+4. Choose a tag に `v0.7.1` を入力して「Create new tag」
 5. 本文に CHANGELOG の該当節を貼って Publish
 
 タグを打っておくと、デプロイが壊れたときに動作していた時点のZIPをブラウザから取得できる。

@@ -6,13 +6,23 @@
 所内限定の内部ツールのため、`1.0.0` までは仕様変更を破壊的変更として扱わない。
 `1.0.0` は「ログインとトークン制限が入り、自分以外も常用できる状態」を基準とする。
 
-`0.5.0` と `0.7.0` にタグがある。`0.1.0` から `0.4.0` と `0.6.0` は開発中の区切りとして
+`0.5.0`、`0.7.0`、`0.7.1` にタグがある。`0.1.0` から `0.4.0` と `0.6.0` は開発中の区切りとして
 さかのぼって記録したもので、対応するタグは存在しない。
 
 ## [Unreleased]
 
 ### 追加予定
 - Claude API 呼び出しのタイムアウト（課題3）
+
+## [0.7.1] - 2026-10-21
+
+### 修正
+- `wrangler.jsonc` の KV バインディングが壊れていて、`v0.7.0` では日次の実行回数制限が
+  機能しなかった問題。`id` の値の中にダッシュボードのスニペット全体が入り込んでおり、
+  設定ファイルが JSON として解析できなくなっていた
+- binding 名は `QUOTA` でなければならない旨をコメントに明記
+  （`worker/quota.js` が `env.QUOTA` を読むため、`KV_BINDING` のままでは
+  JSON が正しくても `quota_not_configured` になる）
 
 ## [0.7.0] - 2026-10-13
 
@@ -92,6 +102,7 @@
 - Claude Messages API + web_search（辞書4サイトに限定）による教材生成
 - Markdown のダウンロードと連番付与
 
-[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.1
 [0.7.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.0
 [0.5.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.5.0
