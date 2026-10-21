@@ -11,16 +11,12 @@
     "not_found_handling": "single-page-application"
   },
 
-  // === 実行回数の上限（未設定） ===
-  // ダッシュボード → Storage & Databases → KV → Create a namespace で作成し、
-  // 表示される Namespace ID を下に貼ってコメントを外す。IDは秘密情報ではない。
-  // 有効にするまで、生成は quota_not_configured で停止する（上限なしで動くことを避けるため）。
-  //
+  // === 実行回数の上限 ===
+  // binding は必ず QUOTA にする。worker/quota.js が env.QUOTA を読むため、
+  // ダッシュボードが例示する KV_BINDING のままだと quota_not_configured になる。
+  // id は KV Namespace の ID（秘密情報ではない）。
   "kv_namespaces": [
-     { "binding": "QUOTA", "id": ""kv_namespaces": [{
-                    "binding": "KV_BINDING",
-                    "id": "c984207846054c8c9dab0723346ad3e1"
-                 }]" }
+    { "binding": "QUOTA", "id": "c984207846054c8c9dab0723346ad3e1" }
   ],
 
   "vars": {
