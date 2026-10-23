@@ -6,10 +6,10 @@ import { toMarkdown, safeTitle, pad3 } from "/shared/schema.js";
 
 const { useState, useRef, useMemo, useEffect } = React;
 const html = htm.bind(React.createElement);
-const NO_KEY = "taka-next-no";
+const NO_KEY = "trainer-next-no";
 
 /** 画面側のバージョン。worker/index.js の WORKER_VERSION と対で更新する。 */
-const APP_VERSION = "0.7.1";
+const APP_VERSION = "0.7.2";
 
 // ---------- 連番 ----------
 function loadNo() {

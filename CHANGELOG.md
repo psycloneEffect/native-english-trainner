@@ -6,13 +6,28 @@
 所内限定の内部ツールのため、`1.0.0` までは仕様変更を破壊的変更として扱わない。
 `1.0.0` は「ログインとトークン制限が入り、自分以外も常用できる状態」を基準とする。
 
-`0.5.0`、`0.7.0`、`0.7.1` にタグがある。`0.1.0` から `0.4.0` と `0.6.0` は開発中の区切りとして
+`0.5.0`、`0.7.0`、`0.7.1`、`0.7.2` にタグがある。`0.1.0` から `0.4.0` と `0.6.0` は開発中の区切りとして
 さかのぼって記録したもので、対応するタグは存在しない。
 
 ## [Unreleased]
 
 ### 追加予定
 - Claude API 呼び出しのタイムアウト（課題3）
+
+## [0.7.2] - 2026-10-23
+
+### 変更
+- 連番を保存する localStorage のキーを `taka-next-no` から `trainer-next-no` に改名。
+  旧プロダクト名の名残を解消した
+
+workers.dev のサブドメインを変更したため、この版から公開URLが変わっている。
+サブドメインはアカウント側の設定で、リポジトリには含まれない。
+
+オリジンが変わると Cookie と localStorage は引き継がれないので、
+再ログインが必要になり、ファイル番号も 001 から再開する。
+キーの改名で連番が失われるのは本来避けるべき変更だが、
+オリジン変更で同じことが起きる今回に限り、実害がないためまとめて行った。
+旧キーからの引き継ぎ処理は、新オリジンに旧キーが存在しないため入れていない。
 
 ## [0.7.1] - 2026-10-21
 
@@ -102,7 +117,8 @@
 - Claude Messages API + web_search（辞書4サイトに限定）による教材生成
 - Markdown のダウンロードと連番付与
 
-[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.2
 [0.7.1]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.1
 [0.7.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.0
 [0.5.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.5.0
