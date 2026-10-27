@@ -1,0 +1,21 @@
+# PR ごとに、版の扱いが規則どおりかを確かめる。
+# 規則の中身は .github/scripts/check-version.sh を参照。
+name: version-check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 比較元との差分と、既存タグの確認に履歴が要る
+
+      - name: 版のチェック
+        run: bash .github/scripts/check-version.sh "origin/${{ github.base_ref }}"
