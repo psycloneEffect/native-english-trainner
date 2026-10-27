@@ -1,0 +1,42 @@
+# main に反映された版に、タグを自動で付ける。MINOR / MAJOR は Release の下書きも作る。
+# タグを打つコミットの選び方は .github/scripts/release.sh を参照。
+#
+# 手動実行（Actions タブ → release → Run workflow）で、過去の版を後から補うこともできる。
+# 版を指定すると、その版の定数を持ちビルドが成功したコミットを探してタグを付ける。
+#
+# タグ付与と Release 作成を同じジョブで行うのは意図的。
+# GITHUB_TOKEN で作ったタグは、別のワークフローを起動しないため。
+name: release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "タグを付ける版（例: 0.7.1）。空なら main の最新の版"
+        required: false
+
+permissions:
+  contents: write # タグの push と Release の作成
+  checks: read    # Workers Builds の成否を読む
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 候補のコミットをたどるのに全履歴が要る
+
+      - name: タグと Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ inputs.version }}
+        run: bash .github/scripts/release.sh
