@@ -23,10 +23,10 @@
     "MODEL": "claude-sonnet-5",
     // 1日あたりの実行回数。全体と、端末ごと。KVを有効にしてから効く。
     "DAILY_LIMIT": "30",
-    "PER_CLIENT_LIMIT": "10"
+    "PER_CLIENT_LIMIT": "10",
     // 管理者の1日あたり上限。未設定なら管理者は無制限。
     // 管理者を有効にするには ADMIN_USERNAME / ADMIN_PASSWORD を Secret に登録する。
-    // , "ADMIN_DAILY_LIMIT": "100"
+    "ADMIN_DAILY_LIMIT": "100"
   }
 
   // 以下はダッシュボードの Settings > Variables and Secrets で Secret として登録する。
