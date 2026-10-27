@@ -10,11 +10,16 @@
  * Workers KV などのストレージを増やさずに済む。失効させたい場合は SESSION_SECRET を
  * 入れ替える。全員のセッションが一斉に無効になる。
  *
+ * 管理者（任意）:
+ *   ADMIN_USERNAME / ADMIN_PASSWORD を Secret に登録すると管理者ログインが有効になる。
+ *   管理者は実行回数の上限を受けない（ADMIN_DAILY_LIMIT を設定した場合はその値まで）。
+ *   未登録なら管理者は存在せず、挙動は従来と同じ。
+ *
  * 既知の制約:
  * - ログイン試行回数の制限がない。状態を持たない構成のため、総当たり対策は
  *   パスワードの強度に依存する。所内限定公開を前提とした割り切り。
- * - 1アカウントの共有運用。利用者ごとのトークン制限を入れる段階で、
- *   アカウントを分けるか、Cloudflare Access の個人IDに切り替える。
+ *   管理者のパスワードは漏れたときの被害が最も大きいので、特に強くすること。
+ * - 共有アカウントは1つ。誰が実行したかは区別しない。
  */
 
 const COOKIE_NAME = "sid";
@@ -52,24 +57,51 @@ export function configError(env) {
   return null;
 }
 
-/** ID/パスワードを検証する */
-export function verifyCredentials(env, username, password) {
-  return (
-    typeof username === "string" &&
-    typeof password === "string" &&
-    timingSafeEqual(username, env.APP_USERNAME) &&
-    timingSafeEqual(password, env.APP_PASSWORD)
-  );
+/**
+ * 管理者の認証情報が使える状態か。
+ * 未設定なら管理者ログインは存在しない。共有アカウントと完全に同じ値の場合も
+ * 無効として扱う（全員が管理者になってしまうため）。
+ */
+function adminEnabled(env) {
+  if (!env.ADMIN_USERNAME || !env.ADMIN_PASSWORD) return false;
+  if (env.ADMIN_USERNAME === env.APP_USERNAME && env.ADMIN_PASSWORD === env.APP_PASSWORD) {
+    console.warn("ADMIN_* が APP_* と同じ値のため、管理者ログインを無効にしています");
+    return false;
+  }
+  return true;
 }
 
-/** Set-Cookie 用のセッション文字列を作る */
-export async function createSession(env, username) {
-  const payload = b64url(enc.encode(JSON.stringify({ u: username, exp: Date.now() + SESSION_TTL_MS })));
+const matches = (username, password, u, p) =>
+  timingSafeEqual(username, u) && timingSafeEqual(password, p);
+
+/**
+ * ID/パスワードを検証し、役割を返す。
+ * "admin" | "user" のいずれか。一致しなければ null。
+ * 管理者を先に判定するので、IDが共有アカウントと同じでもパスワードで区別できる。
+ */
+export function verifyCredentials(env, username, password) {
+  if (typeof username !== "string" || typeof password !== "string") return null;
+  if (adminEnabled(env) && matches(username, password, env.ADMIN_USERNAME, env.ADMIN_PASSWORD)) {
+    return "admin";
+  }
+  if (matches(username, password, env.APP_USERNAME, env.APP_PASSWORD)) return "user";
+  return null;
+}
+
+/**
+ * Set-Cookie 用のセッション文字列を作る。
+ * 役割は署名付きの payload に入るので、SESSION_SECRET を知らない限り書き換えられない。
+ */
+export async function createSession(env, username, role = "user") {
+  const payload = b64url(enc.encode(JSON.stringify({ u: username, r: role, exp: Date.now() + SESSION_TTL_MS })));
   const sig = await hmac(env.SESSION_SECRET, payload);
   return `${payload}.${sig}`;
 }
 
-/** Cookie からセッションを読む。妥当なら { u, exp }、そうでなければ null。 */
+/** セッションの役割。0.8.0 より前に発行されたセッションには r が無いので user とみなす。 */
+export const roleOf = (session) => (session && session.r === "admin" ? "admin" : "user");
+
+/** Cookie からセッションを読む。妥当なら { u, r, exp }、そうでなければ null。 */
 export async function readSession(request, env) {
   const raw = (request.headers.get("cookie") || "")
     .split(";")

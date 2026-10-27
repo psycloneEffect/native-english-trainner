@@ -151,3 +151,7 @@ button.link:active:not(:disabled){transform:none}
 .quota{font-family:var(--en);font-size:.8rem;font-weight:700;color:var(--muted);
   padding:7px 12px;border-radius:99px;background:var(--leaf-soft)}
 .quota.low{color:var(--ng);background:var(--ng-soft)}
+
+/* 管理者の表示。残り回数と同じ位置に出し、色だけで役割を区別する */
+.quota.admin{color:var(--gold);background:color-mix(in srgb, var(--gold) 14%, transparent)}
+.quota.admin.low{color:var(--ng);background:var(--ng-soft)}
