@@ -25,11 +25,12 @@ import {
   readSession,
   sessionCookie,
   clearCookie,
+  roleOf,
 } from "./auth.js";
 import { consume, peek } from "./quota.js";
 
 /** このWorkerのバージョン。public/app.js の APP_VERSION と対で更新する。 */
-const WORKER_VERSION = "0.7.2";
+const WORKER_VERSION = "0.8.0";
 
 const json = (body, status = 200, extraHeaders = {}) =>
   new Response(JSON.stringify(body), {
@@ -55,11 +56,13 @@ export default {
       case "/api/logout":
         return json({ ok: true }, 200, { "set-cookie": clearCookie() });
       case "/api/session": {
-        const authed = !!(await readSession(request, env));
+        const session = await readSession(request, env);
+        const role = session ? roleOf(session) : null;
         return json({
-          authenticated: authed,
+          authenticated: !!session,
+          role,
           version: WORKER_VERSION,
-          quota: authed ? await peek(request, env) : null,
+          quota: session ? await peek(request, env, role) : null,
         });
       }
       case "/api/generate":
@@ -80,13 +83,15 @@ async function handleLogin(request, env) {
     return json({ error: "invalid_body" }, 400);
   }
 
-  if (!verifyCredentials(env, body && body.username, body && body.password)) {
+  const role = verifyCredentials(env, body && body.username, body && body.password);
+  if (!role) {
     // ID と パスワードのどちらが違うかは返さない
     return json({ error: "invalid_credentials" }, 401);
   }
 
-  const session = await createSession(env, env.APP_USERNAME);
-  return json({ ok: true, version: WORKER_VERSION }, 200, { "set-cookie": sessionCookie(session) });
+  const username = role === "admin" ? env.ADMIN_USERNAME : env.APP_USERNAME;
+  const session = await createSession(env, username, role);
+  return json({ ok: true, role, version: WORKER_VERSION }, 200, { "set-cookie": sessionCookie(session) });
 }
 
 async function handleGenerate(request, env) {
@@ -108,7 +113,7 @@ async function handleGenerate(request, env) {
 
   // 上限の確認と消費は API を呼ぶ前に行う。
   // 生成に失敗してもトークンは消費されるため、成功時だけ数えると上限が機能しない。
-  const quota = await consume(request, env);
+  const quota = await consume(request, env, roleOf(session));
   if (!quota.ok) {
     const status = quota.code === "quota_not_configured" ? 500 : 429;
     return json({ error: quota.code, scope: quota.scope, resetAt: quota.resetAt }, status);

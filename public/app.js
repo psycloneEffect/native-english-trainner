@@ -9,7 +9,7 @@ const html = htm.bind(React.createElement);
 const NO_KEY = "trainer-next-no";
 
 /** 画面側のバージョン。worker/index.js の WORKER_VERSION と対で更新する。 */
-const APP_VERSION = "0.7.2";
+const APP_VERSION = "0.8.0";
 
 // ---------- 連番 ----------
 function loadNo() {
@@ -39,6 +39,17 @@ const ERR = {
 };
 
 // ---------- 部品 ----------
+/** 残り回数の表示。管理者は役割を明示し、上限が無ければ「無制限」と出す。 */
+function QuotaBadge({ quota }) {
+  if (quota.admin) {
+    const unlimited = quota.remaining === null || quota.remaining === undefined;
+    return html`<span class=${"quota admin" + (!unlimited && quota.remaining <= 2 ? " low" : "")}>
+      管理者${unlimited ? "（無制限）" : "・本日の残り " + quota.remaining + " 回"}</span>`;
+  }
+  if (typeof quota.client !== "number") return null;
+  return html`<span class=${"quota" + (quota.client <= 2 ? " low" : "")}>本日の残り ${quota.client} 回</span>`;
+}
+
 /** ヒーロー。NGの吹き出しとOKの吹き出しが入れ替わる様子を示す */
 function Hero() {
   return html`<svg class="art" viewBox="0 0 96 96" width="96" height="96" role="img"
@@ -134,7 +145,8 @@ function App() {
   const [view, setView] = useState("preview");
   const [apiVersion, setApiVersion] = useState(null);
   const [authed, setAuthed] = useState(null); // null: 確認中
-  const [quota, setQuota] = useState(null);   // { client, total } 残り回数
+  // 残り回数。利用者は { client, total }、管理者は { admin: true, remaining }（null は無制限）
+  const [quota, setQuota] = useState(null);
   const ctlRef = useRef(null);
 
   const canAsk = !busy && situation.trim() && ng.trim();
@@ -185,12 +197,13 @@ function App() {
       if (body.quota) setQuota(body.quota);
       if (res.status === 429 && body.error === "quota_exceeded") {
         const reset = body.resetAt ? new Date(body.resetAt).toLocaleString("ja-JP", { hour: "2-digit", minute: "2-digit", month: "numeric", day: "numeric" }) : "明日";
-        setQuota({ client: 0, total: body.scope === "total" ? 0 : null });
-        throw new Error(
-          (body.scope === "total"
-            ? "本日の全体の実行回数の上限に達しました。"
-            : "本日のこの端末の実行回数の上限に達しました。") + reset + " に戻ります。"
-        );
+        const msg = {
+          total: "本日の全体の実行回数の上限に達しました。",
+          client: "本日のこの端末の実行回数の上限に達しました。",
+          admin: "本日の管理者の実行回数の上限に達しました。",
+        }[body.scope] || "本日の実行回数の上限に達しました。";
+        setQuota(body.scope === "admin" ? { admin: true, remaining: 0 } : { client: 0, total: body.scope === "total" ? 0 : null });
+        throw new Error(msg + reset + " に戻ります。");
       }
       if (res.status === 401) {
         // セッション切れ。入力は残したままログイン画面へ戻す。
@@ -282,8 +295,7 @@ function App() {
         </label>
         <button class="ghost" onClick=${() => { setNo(1); saveNo(1); setNoText("001"); }} disabled=${busy || no === 1}>001に戻す</button>
         <div class="spacer"></div>
-        ${quota && typeof quota.client === "number" && html`
-          <span class=${"quota" + (quota.client <= 2 ? " low" : "")}>本日の残り ${quota.client} 回</span>`}
+        ${quota && html`<${QuotaBadge} quota=${quota} />`}
         ${busy
           ? html`<button class="ghost" onClick=${() => ctlRef.current && ctlRef.current.abort()}>停止</button>`
           : html`<button onClick=${ask} disabled=${!canAsk}>Ask</button>`}
