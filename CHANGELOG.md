@@ -6,13 +6,32 @@
 所内限定の内部ツールのため、`1.0.0` までは仕様変更を破壊的変更として扱わない。
 `1.0.0` は「ログインとトークン制限が入り、自分以外も常用できる状態」を基準とする。
 
-`0.5.0`、`0.7.0`、`0.7.1`、`0.7.2` にタグがある。`0.1.0` から `0.4.0` と `0.6.0` は開発中の区切りとして
-さかのぼって記録したもので、対応するタグは存在しない。
+`0.5.0` 以降はリリースごとにタグを打つ。例外として `0.1.0` から `0.4.0` と `0.6.0` は
+開発中の区切りとしてさかのぼって記録したもので、対応するタグは存在しない。
 
 ## [Unreleased]
 
 ### 追加予定
 - Claude API 呼び出しのタイムアウト（課題3）
+
+## [0.8.0] - 2026-10-27
+
+### 追加
+- 管理者ロール。Secret に `ADMIN_USERNAME` / `ADMIN_PASSWORD` を登録すると有効になり、
+  管理者は実行回数の上限を受けない。未登録なら管理者は存在せず、挙動は従来と同じ
+- 管理者の実行は全体（`DAILY_LIMIT`）と端末ごと（`PER_CLIENT_LIMIT`）のどちらの
+  カウンタにも加算しない。開発中の試行で他の利用者の枠を食わないようにするため
+- 任意の `ADMIN_DAILY_LIMIT`。設定すると管理者専用のカウンタでその回数まで制限する
+- `POST /api/login` と `GET /api/session` が `role`（`admin` / `user`）を返す
+- 画面の残り回数の位置に「管理者（無制限）」または管理者の残り回数を表示
+
+### 変更
+- セッションの署名付き payload に役割 `r` を追加。0.8.0 より前に発行された
+  セッションは `r` を持たないので、共有アカウントとして扱う
+- `ADMIN_*` が共有アカウントと完全に同じ値の場合、全員が管理者になるのを防ぐため
+  管理者ログインを無効として扱う
+- 管理者が無制限の場合は KV が無くても生成できる。共有アカウントは従来どおり、
+  KV が無ければ `quota_not_configured` で停止する
 
 ## [0.7.2] - 2026-10-23
 
@@ -117,7 +136,8 @@ workers.dev のサブドメインを変更したため、この版から公開UR
 - Claude Messages API + web_search（辞書4サイトに限定）による教材生成
 - Markdown のダウンロードと連番付与
 
-[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.8.0
 [0.7.2]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.2
 [0.7.1]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.1
 [0.7.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.0
