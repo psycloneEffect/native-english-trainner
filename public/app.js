@@ -9,7 +9,7 @@ const html = htm.bind(React.createElement);
 const NO_KEY = "trainer-next-no";
 
 /** 画面側のバージョン。worker/index.js の WORKER_VERSION と対で更新する。 */
-const APP_VERSION = "0.8.0";
+const APP_VERSION = "0.8.1";
 
 // ---------- 連番 ----------
 function loadNo() {
@@ -92,7 +92,9 @@ function Login(props) {
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(ERR[body.error] || "ログインに失敗しました。");
       setPassword("");
-      props.onSuccess(res.headers.get("x-app-version") || body.version || null);
+      // 画面の切り替えはセッションを取り直してから行う（役割と残り回数を正しく出すため）
+      const ok = await props.onSuccess();
+      if (!ok) throw new Error("ログインは成功しましたが、セッションを確認できませんでした。ブラウザがCookieを拒否していないか確認してください。");
     } catch (e2) {
       setErr(e2.message);
       setBusy(false);
@@ -151,24 +153,30 @@ function App() {
 
   const canAsk = !busy && situation.trim() && ng.trim();
 
-  // 起動時にログイン状態を確認する。Cookieは HttpOnly のため画面からは読めない。
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/session")
-      .then((r) => r.json())
-      .then((d) => {
-        if (!alive) return;
-        setAuthed(!!d.authenticated);
-        if (d.version) setApiVersion(d.version);
-        if (d.quota) setQuota(d.quota);
-      })
-      .catch(() => alive && setAuthed(false));
-    return () => { alive = false; };
-  }, []);
+  // ログイン状態・役割・残り回数をサーバーから取り直す。Cookieは HttpOnly のため画面からは読めない。
+  // 起動時だけでなくログイン直後にも呼ぶ。アカウントを切り替えたとき、
+  // 前のアカウントの残り回数が画面に残らないようにするため。
+  async function loadSession() {
+    try {
+      const d = await (await fetch("/api/session")).json();
+      setAuthed(!!d.authenticated);
+      if (d.version) setApiVersion(d.version);
+      // 値が無い場合も必ず上書きする。前のアカウントの値を引き継がないため。
+      setQuota(d.quota || null);
+      return !!d.authenticated;
+    } catch (e) {
+      setAuthed(false);
+      setQuota(null);
+      return false;
+    }
+  }
+
+  useEffect(() => { loadSession(); }, []);
 
   async function logout() {
     await fetch("/api/logout", { method: "POST" }).catch(() => {});
     setAuthed(false);
+    setQuota(null);
     setOutput(null);
     setStatus({ text: "", err: false });
   }
@@ -248,7 +256,7 @@ function App() {
     return html`<div class="wrap"><div class="status"><span class="spin"></span>読み込んでいます…</div></div>`;
   }
   if (!authed) {
-    return html`<${Login} onSuccess=${(v) => { setAuthed(true); if (v) setApiVersion(v); }} />`;
+    return html`<${Login} onSuccess=${loadSession} />`;
   }
 
   return html`

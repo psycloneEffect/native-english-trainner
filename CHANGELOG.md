@@ -14,6 +14,16 @@
 ### 追加予定
 - Claude API 呼び出しのタイムアウト（課題3）
 
+## [0.8.1] - 2026-10-27
+
+### 修正
+- ログアウトして別のアカウントでログインし直すと、リロードするまで前のアカウントの
+  残り回数が表示され続けた問題（管理者でログインしても「本日の残り N 回」と出る）。
+  ログアウト時に残り回数を消し、ログイン直後にセッション情報を取り直すようにした
+- セッション情報に残り回数が無い場合も表示を上書きし、前の値を引き継がないようにした
+- ログイン直後のセッション確認が失敗した場合（ブラウザが Cookie を拒否した場合など）、
+  「確認中…」のまま止まらず、理由をエラーとして表示するようにした
+
 ## [0.8.0] - 2026-10-27
 
 ### 追加
@@ -136,7 +146,8 @@ workers.dev のサブドメインを変更したため、この版から公開UR
 - Claude Messages API + web_search（辞書4サイトに限定）による教材生成
 - Markdown のダウンロードと連番付与
 
-[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/psycloneEffect/native-english-trainner/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.8.1
 [0.8.0]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.8.0
 [0.7.2]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.2
 [0.7.1]: https://github.com/psycloneEffect/native-english-trainner/releases/tag/v0.7.1
