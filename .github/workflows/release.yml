@@ -1,8 +1,11 @@
 # main に反映された版に、タグを自動で付ける。MINOR / MAJOR は Release の下書きも作る。
-# タグを打つコミットの選び方は .github/scripts/release.sh を参照。
+# 対象の版とタグを打つコミットの選び方は .github/scripts/release.sh を参照。
 #
-# 手動実行（Actions タブ → release → Run workflow）で、過去の版を後から補うこともできる。
-# 版を指定すると、その版の定数を持ちビルドが成功したコミットを探してタグを付ける。
+# 自動実行は「既存の最新タグより新しい版」をすべて処理する。途中の実行が新しい push に
+# 置き換えられても（concurrency で待機中の実行は1つしか残らない）、次の実行が拾う。
+#
+# 手動実行（Actions タブ → release → Run workflow）では版を1つ指定する。
+# 過去の版を補うとき、または下書きの作成だけが失敗した MINOR / MAJOR を直すときに使う。
 #
 # タグ付与と Release 作成を同じジョブで行うのは意図的。
 # GITHUB_TOKEN で作ったタグは、別のワークフローを起動しないため。
@@ -14,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "タグを付ける版（例: 0.7.1）。空なら main の最新の版"
+        description: "タグを付ける版（例: 0.7.1）。空なら、最新タグより新しい版をすべて処理する"
         required: false
 
 permissions:
