@@ -11,7 +11,7 @@ Playwright is a dependency, and this repository has not adopted it. Adopting it 
 ## Procedure
 
 1. Check that `package.json` exists and has a `test:e2e` script. If it does not, report that Playwright is not set up and stop. Do not try to install it.
-2. Find the tests related to the change by searching `e2e/`.
+2. Find the tests related to the change by searching `tests/e2e/`.
 3. Run the narrowest useful set, then the full suite if that passes.
 4. For each failure, read the evidence in the order below.
 5. Check whether the failure is flaky.
@@ -22,10 +22,10 @@ Playwright is a dependency, and this repository has not adopted it. Adopting it 
 | Goal                   | Command                                                               |
 | ---------------------- | --------------------------------------------------------------------- |
 | Full suite             | `npm run test:e2e`                                                    |
-| One file               | `npm run test:e2e -- e2e/<file>.spec.mjs`                             |
+| One file               | `npm run test:e2e -- tests/e2e/<file>.spec.mjs`                             |
 | By test name           | `npm run test:e2e -- --grep "<name>"`                                 |
 | Only the last failures | `npm run test:e2e -- --last-failed`                                   |
-| Check for flakiness    | `npm run test:e2e -- e2e/<file>.spec.mjs --repeat-each=5 --retries=0` |
+| Check for flakiness    | `npm run test:e2e -- tests/e2e/<file>.spec.mjs --repeat-each=5 --retries=0` |
 
 Do not use headed or UI modes, because they need someone at the screen. Tests must stub `/api/generate`, because a real generation calls the Claude API and costs money.
 

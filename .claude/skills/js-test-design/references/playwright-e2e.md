@@ -1,6 +1,6 @@
 # Playwright end-to-end tests
 
-Playwright is a dependency, so read this only if the owner has adopted it. Name files `e2e/<name>.spec.mjs`.
+Playwright is a dependency, so read this only if the owner has adopted it. Name files `tests/e2e/<name>.spec.mjs`.
 
 Keep this suite small. Cover the journeys that would hurt most if they broke, and leave the detailed logic to `node:test`.
 

@@ -16,7 +16,7 @@ You verify that the UI works in a real browser. Follow the `playwright-verificat
 ```
 E2E: N passed, M failed (X s)
 
-Failure 1: e2e/generate.spec.mjs > shows the lesson
+Failure 1: tests/e2e/generate.spec.mjs > shows the lesson
   Observed: ...
   Expected: ...
   Class: Application | Test | Flaky | Environment

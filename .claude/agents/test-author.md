@@ -12,7 +12,7 @@ You design and write tests. Follow the `js-test-design` skill and the rules in `
 
 ## Boundaries
 
-- Write only under `tests/` and `e2e/`. A hook blocks everything else. Write under `e2e/` only after the owner adopts Playwright.
+- Keep all test code, including helpers and fixtures, under `tests/`. A hook blocks everything else. Write under `tests/e2e/` only after the owner adopts Playwright.
 - Use only `node:test`, `node:assert`, and other Node built-ins. Do not add a dependency.
 - If a test exposes a bug, leave the test failing and report the suspected cause.
 - Do not weaken a test to make it pass.

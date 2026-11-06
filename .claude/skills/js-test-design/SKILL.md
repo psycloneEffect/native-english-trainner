@@ -12,6 +12,7 @@ No compiler checks this code, so tests also guard against wrong names and wrong 
 
 - Use `node:test` and `node:assert/strict`, which ship with Node. Do not add Vitest, Jest, or a `package.json`.
 - Name files `tests/<source path>.test.mjs`, so `worker/quota.js` is tested by `tests/worker/quota.test.mjs`. The `.mjs` extension makes the test an ES module without a `package.json`.
+- Keep all test code, including helpers and fixtures, under `tests/`. Do not place tests beside the source.
 - Import the code by relative path: `import { normalize } from "../../worker/input.js";`.
 - Write test names and comments in Japanese.
 

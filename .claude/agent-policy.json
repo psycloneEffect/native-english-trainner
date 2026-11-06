@@ -28,8 +28,7 @@
     },
     "test-author": {
       "write": [
-        "tests/**",
-        "e2e/**"
+        "tests/**"
       ],
       "shell": "verify"
     },

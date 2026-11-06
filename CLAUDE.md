@@ -23,6 +23,7 @@ Reply to the user in Japanese, including subagent reports.
 - Tutor tone and sourcing rules: `worker/prompt.js`. It must not define the output structure.
 - `worker/index.js` holds routing and response shaping only.
 - A new API error code uses `{ error: "snake_case_code" }` and needs a message in `ERR` in `public/app.js`.
+- Test code, including helpers, fixtures, and any future E2E tests: `tests/`. The only exception is `.claude/hooks/hooks.test.mjs`, which guards agent permissions and stays beside the hooks it tests.
 
 ## Behavior to preserve
 
@@ -78,7 +79,7 @@ The main session keeps these, because `.claude/agent-policy.json` blocks agents 
 - `npx wrangler@4`, including the dry-run in Verification. A prefix rule cannot tell a dry-run from a real deploy, because `--dry-run=false` would match it
 - Committing and opening PRs
 
-Do not use `ui-verifier` unless the owner adopts Playwright, which adds a dependency. `test-author` writes under `e2e/` only in that case.
+Do not use `ui-verifier` unless the owner adopts Playwright, which adds a dependency. `test-author` writes under `tests/e2e/` only in that case.
 
 Agent reports are not shown to the owner, so relay the findings in Japanese, including any you chose not to act on.
 
