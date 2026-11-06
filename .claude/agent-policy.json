@@ -1,0 +1,112 @@
+{
+  "neverWrite": [".env", ".env.*", "**/.env", "**/.env.*"],
+  "defaultAgent": {
+    "write": [],
+    "shell": "inspect"
+  },
+  "agents": {
+    "implementer": {
+      "write": ["src/**"],
+      "denyWrite": ["src/**/*.test.*", "src/**/*.spec.*", "src/**/__tests__/**"],
+      "shell": "verify"
+    },
+    "test-author": {
+      "write": ["tests/**", "e2e/**"],
+      "shell": "verify"
+    },
+    "test-runner": {
+      "write": [],
+      "shell": "verify"
+    },
+    "debugger": {
+      "write": [],
+      "shell": "verify"
+    },
+    "reviewer": {
+      "write": [".claude/agent-memory/reviewer/**"],
+      "shell": "verify"
+    },
+    "librarian": {
+      "write": ["docs/research/**"],
+      "shell": "inspect"
+    },
+    "documenter": {
+      "write": ["docs/**", "README.md", "CHANGELOG.md"],
+      "denyWrite": ["docs/research/**", "docs/specs/**"],
+      "shell": "verify"
+    },
+    "ui-verifier": {
+      "write": [],
+      "shell": "e2e"
+    }
+  },
+  "shellProfiles": {
+    "inspect": [
+      "cd",
+      "pwd",
+      "ls",
+      "cat",
+      "head",
+      "tail",
+      "wc",
+      "find",
+      "grep",
+      "rg",
+      "git status",
+      "git diff",
+      "git log",
+      "git show",
+      "git blame",
+      "node --version",
+      "npm --version",
+      "npm ls"
+    ],
+    "verify": [
+      "cd",
+      "pwd",
+      "ls",
+      "cat",
+      "head",
+      "tail",
+      "wc",
+      "find",
+      "grep",
+      "rg",
+      "git status",
+      "git diff",
+      "git log",
+      "git show",
+      "git blame",
+      "node --version",
+      "npm --version",
+      "npm ls",
+      "npm run check",
+      "npm run format:check",
+      "npm run lint",
+      "npm run typecheck",
+      "npm run test",
+      "npm run test:coverage",
+      "npm run build"
+    ],
+    "e2e": [
+      "cd",
+      "pwd",
+      "ls",
+      "cat",
+      "head",
+      "tail",
+      "wc",
+      "find",
+      "grep",
+      "rg",
+      "git status",
+      "git diff",
+      "git log",
+      "git show",
+      "node --version",
+      "npm --version",
+      "npm ls",
+      "npm run test:e2e"
+    ]
+  }
+}
