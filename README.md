@@ -14,6 +14,9 @@ worker/input.js          リクエストの正規化と検証
 worker/auth.js           ログインの検証（共有／管理者）と、署名付きCookieによるセッション管理
 worker/quota.js          KVによる日次の実行回数制限
 wrangler.jsonc           Worker の設定
+tests/                   node:test によるテスト。テストコードはすべてここに置く。依存の追加なしで動く
+.claude/                 Claude Code のサブエージェントとスキルの設定（デプロイには影響しない）
+.github/                 CI、CodeQL、Dependabot、Issue・PR テンプレート、セキュリティポリシー
 ```
 
 リクエストの流れ:
