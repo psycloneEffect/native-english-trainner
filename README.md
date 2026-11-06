@@ -2,7 +2,7 @@
 
 ローカル環境不要。GitHubとCloudflareのダッシュボードだけでデプロイできる。
 
-```ts
+```txt
 public/index.html        画面。React は CDN から読み込むためビルド不要
 public/app.js            画面のロジック。JSXの代わりに htm を使用（ESモジュール）
 public/styles.css        スタイル
