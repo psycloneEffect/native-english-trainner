@@ -1,0 +1,39 @@
+# ローカルの開発と検証にだけ使う。デプロイには関係しない。
+#   開発サーバー: docker compose up --build
+#   検証:         docker compose run --rm --build verify
+name: native-english-trainner
+
+x-app: &app
+  build: .
+  image: native-english-trainner-dev
+  init: true
+  volumes:
+    # ソースは編集をすぐ反映するためマウントする。
+    # 秘密情報は、ファイルがあるときだけ wrangler dev が .dev.vars から読む。
+    - .:/app
+    # ローカルの KV と一時ファイルは、Windows 側のファイルと混ざらないようにボリュームに置く
+    - wrangler-state:/app/.wrangler
+
+services:
+  dev:
+    <<: *app
+    ports:
+      # LAN には公開しない。ログイン情報とローカルの API キーを扱う開発サーバーのため。
+      - "127.0.0.1:8787:8787"
+
+  # docker compose up では起動せず、明示したときだけ実行する
+  verify:
+    <<: *app
+    profiles: [verify]
+    # CLAUDE.md の Verification と同じ内容。Compose の変数展開を避けるため $ は $$ と書く。
+    # dry-run なので実際のデプロイはしない。コンテナに Cloudflare の資格情報も渡していない。
+    command:
+      - sh
+      - -ec
+      - |
+        for f in worker/*.js public/app.js public/shared/schema.js; do node --check "$$f"; done
+        node --test ".claude/hooks/*.test.mjs" "tests/**/*.test.mjs"
+        wrangler deploy --dry-run --outdir "$$(mktemp -d)"
+
+volumes:
+  wrangler-state:
