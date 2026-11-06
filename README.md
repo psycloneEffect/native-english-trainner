@@ -17,6 +17,9 @@ wrangler.jsonc           Worker の設定
 tests/                   node:test によるテスト。テストコードはすべてここに置く。依存の追加なしで動く
 .claude/                 Claude Code のサブエージェントとスキルの設定（デプロイには影響しない）
 .github/                 CI、CodeQL、Dependabot、Issue・PR テンプレート、セキュリティポリシー
+Dockerfile               ローカルの開発・検証用イメージ（任意。デプロイには影響しない）
+compose.yaml             開発サーバー（dev）と検証（verify）の定義（任意）
+.dockerignore            ビルドに何も渡さない設定。.dev.vars がイメージに入らないようにする
 ```
 
 リクエストの流れ:
@@ -198,6 +201,35 @@ Namespace ID は秘密情報ではないので、リポジトリに書いて問�
 5. 本文に CHANGELOG の該当節を貼って Publish
 
 タグを打っておくと、デプロイが壊れたときに動作していた時点のZIPをブラウザから取得できる。
+
+---
+
+## ローカルでの実行（任意・Docker）
+
+手元で動かして確認したい人向けの任意の手順。デプロイには不要で、本番は従来どおり
+GitHub と Cloudflare だけで完結する。前提は Docker Desktop。WSL2 の Ubuntu からでも同じコマンドで動く。
+
+開発サーバー（`http://localhost:8787`。`127.0.0.1` にのみ公開し、LAN には出さない）:
+
+```sh
+docker compose up --build
+```
+
+- リポジトリ直下に `.dev.vars` を作り、`APP_USERNAME`、`APP_PASSWORD`、`SESSION_SECRET` を
+  書くとログインできる。`.dev.vars` は Git 管理外。
+- `ANTHROPIC_API_KEY` を書かない間は、`/api/generate` は `server_misconfigured` を返し、
+  Claude は呼ばれない。書くと実際に呼ばれ、課金される。
+- ソースを編集すると自動で再読み込みされる。
+- ローカルの KV は名前付きボリューム（`wrangler-state`）に保存される。本番の KV には触れない。
+  消すときは `docker compose down -v`。
+
+検証（構文チェック、テスト、Worker の dry-run）:
+
+```sh
+docker compose run --rm --build verify
+```
+
+dry-run なので実際のデプロイはしない。
 
 ---
 
