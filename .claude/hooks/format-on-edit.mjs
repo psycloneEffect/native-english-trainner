@@ -19,13 +19,9 @@ const PROJECT_DIR =
 const ESLINT_BIN = path.join(PROJECT_DIR, "node_modules", "eslint", "bin", "eslint.js");
 const PRETTIER_BIN = path.join(PROJECT_DIR, "node_modules", "prettier", "bin", "prettier.cjs");
 
-const LINTED_EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".cts"]);
+const LINTED_EXTENSIONS = new Set([".js", ".mjs", ".cjs"]);
 const FORMATTED_EXTENSIONS = new Set([
   ...LINTED_EXTENSIONS,
-  ".js",
-  ".jsx",
-  ".mjs",
-  ".cjs",
   ".json",
   ".md",
   ".css",

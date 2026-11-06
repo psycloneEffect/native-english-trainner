@@ -43,10 +43,11 @@ These are accepted trade-offs, not bugs. Do not fix them unasked: no login rate 
 
 ## Verification
 
-There are no tests or linters. Run after every code change:
+There are no linters. Application tests use the built-in `node:test` under `tests/`, which needs no dependency. Run after every code change:
 
 ```sh
 for f in worker/*.js public/app.js public/shared/schema.js; do node --check "$f"; done
+node --test ".claude/hooks/*.test.mjs" "tests/**/*.test.mjs"
 npx wrangler@4 deploy --dry-run --outdir "$(mktemp -d)"
 ```
 
@@ -54,33 +55,30 @@ To smoke-test the API, create a temporary `.dev.vars` with `APP_USERNAME`, `APP_
 
 - Never run a real `wrangler deploy`.
 - Never call the real Claude API unless the user asks; it costs money.
-- UI behavior has no automated check. Report it as unverified unless you tested it in a browser.
+- `public/app.js` needs React and browser globals, so `node:test` does not cover it. UI behavior has no automated check. Report it as unverified unless you tested it in a browser.
 - `.gitignore` excludes `.dev.vars` and `.wrangler/`, but still delete them after use. Stage files by name, never with `git add -A`.
 
 ## Subagents
 
-The owner wants the agents in `.claude/agents/` used for the work below. Delegate without asking first.
+The owner wants the agents in `.claude/agents/` used for the work below. Delegate without asking first. Each agent preloads one skill from `.claude/skills/`, and both assume this repository's plain JavaScript stack.
 
 | When | Agent | Scope in this repository |
 | --- | --- | --- |
+| An approved change to `worker/` or `public/` | `implementer` | Writes only `worker/**` and `public/**`, excluding tests |
+| Adding tests or reproducing a bug | `test-author` | Writes only `tests/**`, using the built-in `node:test` |
+| Syntax checks and tests with long output | `test-runner` | Read-only. Cannot run the Worker dry-run |
 | A change to `worker/` or `public/` is complete, before committing | `reviewer` | Required. Read-only except for its memory directory |
-| A failure whose cause is not obvious | `debugger` | Diagnoses only. Run the Verification commands yourself and pass it the output |
-| `README.md` or `CHANGELOG.md` must catch up with a change | `documenter` | Cannot edit source, so set `WORKER_VERSION` and `APP_VERSION` yourself in the same change |
+| A failure whose cause is not obvious | `debugger` | Diagnoses only |
+| `README.md` or `CHANGELOG.md` must catch up with a change | `documenter` | Cannot edit source, so `WORKER_VERSION` and `APP_VERSION` are set by `implementer` or the main session in the same change |
 | Unclear API usage, or research before proposing a dependency | `librarian` | Writes only to `docs/research/`. The owner still decides on any dependency |
 
 The main session keeps these, because `.claude/agent-policy.json` blocks agents from them:
 
-- Editing `worker/`, `public/`, `wrangler.jsonc`, and `.claude/`
-- The commands in Verification (`node --check`, `npx wrangler@4`)
+- Editing `wrangler.jsonc`, `.claude/`, `.github/`, and this file
+- `npx wrangler@4`, including the dry-run in Verification. A prefix rule cannot tell a dry-run from a real deploy, because `--dry-run=false` would match it
 - Committing and opening PRs
 
-Do not use these agents until the policy and their definitions are adapted, and ask the owner before doing that:
-
-- `implementer`: may write only `src/**`, which does not exist here
-- `test-runner`: runs npm scripts, and there is no `package.json`
-- `test-author` and `ui-verifier`: need Vitest or Playwright, which would add a dependency
-
-The agent definitions assume TypeScript and npm. Every delegation prompt must say that this repository is plain JavaScript with no npm scripts, that the agent should skip `npm run` steps and report them as skipped, and that this file overrides its definition where they conflict.
+Do not use `ui-verifier` unless the owner adopts Playwright, which adds a dependency. `test-author` writes under `e2e/` only in that case.
 
 Agent reports are not shown to the owner, so relay the findings in Japanese, including any you chose not to act on.
 

@@ -17,7 +17,12 @@ const SHELL_TOOLS = new Set(["Bash", "PowerShell"]);
 const HARMLESS_REDIRECTIONS = /(?:\b[12])?>>?\s*\/dev\/null|\b2>&1\b/g;
 
 const FORBIDDEN_ARGUMENTS =
-  /(?:^|\s)(?:--output\S*|-(?:delete|exec|execdir|ok|okdir|fls|fprint\S*)(?:\s|$))|(?:^|[\s/"'])\.env(?:\.\S*)?(?:[\s"']|$)/;
+  /(?:^|\s)(?:--output\S*|-(?:delete|exec|execdir|ok|okdir|fls|fprint\S*)(?:\s|$))|(?:^|[\s/"'])\.(?:env|dev\.vars)(?:\.\S*)?(?:[\s"']|$)/;
+
+// A shell profile allows "node --test", which must not become a way to run inline
+// code, load a secrets file, or write a report outside the write policy.
+const FORBIDDEN_NODE_ARGUMENTS =
+  /(?:^|\s)(?:--import|--require|-r|--eval|-e|--print|-p|--loader|--experimental-loader|--env-file\S*|--test-reporter\S*|--watch\S*)(?:[=\s]|$)/;
 
 const ALLOW = Object.freeze({ allow: true, reason: "" });
 
@@ -150,6 +155,7 @@ export function splitShellCommand(command) {
 
 function isCommandAllowed(segment, allowedPrefixes) {
   if (FORBIDDEN_ARGUMENTS.test(segment)) return false;
+  if (/^node\s/.test(segment) && FORBIDDEN_NODE_ARGUMENTS.test(segment)) return false;
   return allowedPrefixes.some((prefix) => segment === prefix || segment.startsWith(`${prefix} `));
 }
 
