@@ -2,7 +2,7 @@
 
 ローカル環境不要。GitHubとCloudflareのダッシュボードだけでデプロイできる。
 
-```
+```ts
 public/index.html        画面。React は CDN から読み込むためビルド不要
 public/app.js            画面のロジック。JSXの代わりに htm を使用（ESモジュール）
 public/styles.css        スタイル
@@ -18,7 +18,7 @@ wrangler.jsonc           Worker の設定
 
 リクエストの流れ:
 
-```
+```txt
 ブラウザ → POST /api/generate {situation, ng, native?}
         → Worker（Secretのキーを付与）→ Claude Messages API + web_search（辞書4サイト限定）
         → Worker が Markdown まで組み立てて {result, markdown, version} を返す
@@ -63,7 +63,7 @@ web search はAPIでは既定で有効。管理者が無効化していない限
 平文の Variable（`MODEL` など `wrangler.jsonc` が持つもの）とは別物なので間違えないこと。
 
 | Variable name | 中身 |
-|---|---|
+| --- | --- |
 | `ANTHROPIC_API_KEY` | Claude Console で発行したキー |
 | `APP_USERNAME` | ログインID |
 | `APP_PASSWORD` | ログインパスワード |
@@ -96,7 +96,7 @@ Namespace ID は秘密情報ではないので、リポジトリに書いて問�
 上限は `wrangler.jsonc` の `vars` で変える。
 
 | 変数 | 既定 | 意味 |
-|---|---|---|
+| --- | --- | --- |
 | `DAILY_LIMIT` | 30 | 全体の1日あたり上限。財布を守るための値 |
 | `PER_CLIENT_LIMIT` | 10 | 端末（接続元IP）ごとの上限。1人が枠を使い切るのを防ぐ |
 | `ADMIN_DAILY_LIMIT` | 未設定 | 管理者の1日あたり上限。未設定なら管理者は無制限 |
@@ -172,7 +172,7 @@ Namespace ID は秘密情報ではないので、リポジトリに書いて問�
 自分以外も常用できる状態」とする。
 
 | 変更の種類 | 上げる桁 | 例 |
-|---|---|---|
+| --- | --- | --- |
 | 出力Markdownの構成変更、互換性のない仕様変更 | MINOR（1.0.0 以降は MAJOR） | 項目の追加・削除 |
 | 機能追加、UI改訂 | MINOR | クリアボタンの追加 |
 | バグ修正、文言調整、プロンプトの微修正 | PATCH | JSONパースの修正 |
@@ -201,7 +201,7 @@ Namespace ID は秘密情報ではないので、リポジトリに書いて問�
 ## カスタマイズ
 
 | 目的 | 変更箇所 |
-|---|---|
+| --- | --- |
 | モデル変更 | `wrangler.jsonc` の `vars.MODEL` |
 | 講師の口調・出典ルール | `worker/prompt.js` の `SYSTEM_PROMPT` |
 | ログイン情報の変更 | Worker の Secret（`APP_USERNAME` / `APP_PASSWORD`）を差し替えて再デプロイ |
@@ -217,7 +217,7 @@ Namespace ID は秘密情報ではないので、リポジトリに書いて問�
 いずれも JSON。`/api/generate` はログイン済みのセッションCookieを必要とする。
 
 | メソッド | パス | 用途 |
-|---|---|---|
+| --- | --- | --- |
 | POST | `/api/login` | `{username, password}` を検証し、セッションCookieを発行。`role` を返す |
 | POST | `/api/logout` | セッションCookieを失効 |
 | GET | `/api/session` | `{authenticated, role, version, quota}` を返す |
