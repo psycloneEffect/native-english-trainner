@@ -1,0 +1,6 @@
+# 公開リポジトリに秘密情報が書き込まれないよう、注意書きのあるフォームだけを使えるようにする
+blank_issues_enabled: false
+contact_links:
+  - name: セキュリティ上の問題を報告する
+    url: https://github.com/psycloneEffect/native-english-trainner/security/advisories/new
+    about: 公開の Issue には書かず、非公開で報告してください。

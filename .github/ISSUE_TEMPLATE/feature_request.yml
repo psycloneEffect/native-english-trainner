@@ -1,0 +1,27 @@
+name: 機能の提案
+description: 新しい機能や、既存の機能の改善を提案する
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **このリポジトリは公開されています。** 社外秘の業務内容は書かないでください。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 困っていること
+      description: どんな場面で、何に困っているかを書いてください。
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案する内容
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 検討した別の方法
+    validations:
+      required: false

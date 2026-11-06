@@ -1,0 +1,48 @@
+name: 不具合の報告
+description: 教材の生成、ログイン、画面の表示などの不具合を報告する
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **このリポジトリは公開されています。** パスワード、API キー、セッション Cookie、社外秘の業務内容は書かないでください。入力例は一般的な内容に置き換えてください。
+
+        セキュリティ上の問題は Issue にせず、[非公開で報告](https://github.com/psycloneEffect/native-english-trainner/security/advisories/new)してください。
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 起きたこと
+      description: 画面に出たメッセージやエラーコードがあれば、そのまま書いてください。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      placeholder: |
+        1. ログインする
+        2. 状況と表現を入力して生成する
+        3. エラーが表示される
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した動作
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: バージョン
+      description: 画面右下の表示です。
+      placeholder: v0.8.1 / api 0.8.1
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: ブラウザと OS
+      placeholder: Chrome 142 / Windows 11
+    validations:
+      required: false
