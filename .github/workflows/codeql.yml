@@ -1,0 +1,37 @@
+# JavaScript の静的セキュリティ解析。認証と Claude API キーを扱う Worker があるので、公開リポジトリとして常時確認する。
+# ビルドが無いプロジェクトなので build-mode: none で解析でき、package.json も不要。
+# 公開リポジトリでは無料だが、非公開にすると GitHub Advanced Security が無い限り失敗する。
+# Settings の CodeQL の Default setup を有効にすると、この高度な設定と競合するので併用しない。
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # コードを変えなくても、解析ルールの更新で新しく見つかる問題を拾う（月曜 03:17 UTC）
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # 解析結果を Security タブに登録するために、このジョブだけに許可する
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+
+      - uses: github/codeql-action/analyze@v4

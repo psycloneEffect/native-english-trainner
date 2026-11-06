@@ -1,0 +1,40 @@
+# このリポジトリは公開されている。秘密情報と個人の環境設定だけを除外し、
+# CLAUDE.md や .claude/agents/ などのプロジェクト設定は共有するため除外しない。
+
+# 秘密情報（wrangler dev が読み込む資格情報を含むため、絶対にコミットしない）
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+
+# Wrangler のローカル実行で生成されるキャッシュ
+.wrangler/
+
+# package.json は置かない方針だが、ローカルで整形ツールなどを入れた場合に備える
+node_modules/
+
+# Claude Code の個人設定と作業用ディレクトリ
+.claude/settings.local.json
+.claude/worktrees/
+# レビュー指摘には未修正の脆弱性が含まれ得るので、公開リポジトリには載せない
+.claude/agent-memory/
+.claude/agent-memory-local/
+# 個人用のメモで、共有する指示は CLAUDE.md に書く
+CLAUDE.local.md
+
+# Next.js 向けの内容で、このプロジェクトの実態と合っていない
+AGENTS.md
+
+# ログにはリクエスト内容や環境情報が混ざることがあるので、公開リポジトリには載せない
+*.log
+
+# テストの生成物（エージェント定義が出力先として想定している）
+coverage/
+test-results/
+playwright-report/
+
+# エディタと OS の個人環境
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini

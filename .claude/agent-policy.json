@@ -1,0 +1,133 @@
+{
+  "neverWrite": [
+    ".env",
+    ".env.*",
+    "**/.env",
+    "**/.env.*",
+    ".dev.vars",
+    ".dev.vars.*",
+    "**/.dev.vars",
+    "**/.dev.vars.*"
+  ],
+  "defaultAgent": {
+    "write": [],
+    "shell": "inspect"
+  },
+  "agents": {
+    "implementer": {
+      "write": [
+        "worker/**",
+        "public/**"
+      ],
+      "denyWrite": [
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/__tests__/**"
+      ],
+      "shell": "verify"
+    },
+    "test-author": {
+      "write": [
+        "tests/**"
+      ],
+      "shell": "verify"
+    },
+    "test-runner": {
+      "write": [],
+      "shell": "verify"
+    },
+    "debugger": {
+      "write": [],
+      "shell": "verify"
+    },
+    "reviewer": {
+      "write": [
+        ".claude/agent-memory/reviewer/**"
+      ],
+      "shell": "verify"
+    },
+    "librarian": {
+      "write": [
+        "docs/research/**"
+      ],
+      "shell": "inspect"
+    },
+    "documenter": {
+      "write": [
+        "docs/**",
+        "README.md",
+        "CHANGELOG.md"
+      ],
+      "denyWrite": [
+        "docs/research/**",
+        "docs/specs/**"
+      ],
+      "shell": "verify"
+    },
+    "ui-verifier": {
+      "write": [],
+      "shell": "e2e"
+    }
+  },
+  "shellProfiles": {
+    "inspect": [
+      "cd",
+      "pwd",
+      "ls",
+      "cat",
+      "head",
+      "tail",
+      "wc",
+      "echo",
+      "find",
+      "grep",
+      "rg",
+      "git status",
+      "git diff",
+      "git log",
+      "git show",
+      "git blame",
+      "node --version"
+    ],
+    "verify": [
+      "cd",
+      "pwd",
+      "ls",
+      "cat",
+      "head",
+      "tail",
+      "wc",
+      "echo",
+      "find",
+      "grep",
+      "rg",
+      "git status",
+      "git diff",
+      "git log",
+      "git show",
+      "git blame",
+      "node --version",
+      "node --check",
+      "node --test"
+    ],
+    "e2e": [
+      "cd",
+      "pwd",
+      "ls",
+      "cat",
+      "head",
+      "tail",
+      "wc",
+      "echo",
+      "find",
+      "grep",
+      "rg",
+      "git status",
+      "git diff",
+      "git log",
+      "git show",
+      "node --version",
+      "npm run test:e2e"
+    ]
+  }
+}

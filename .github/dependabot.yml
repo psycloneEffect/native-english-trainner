@@ -1,0 +1,18 @@
+# package.json を置かない方針なので、更新を追う対象は GitHub Actions だけ。npm は指定しない。
+# public/index.html が CDN から読む React と htm は Dependabot の対象外なので、手動で更新する。
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      # アプリの動作に直接は影響しないので、毎週の通知で PR を増やさない
+      interval: monthly
+      timezone: Asia/Tokyo
+    # 個別の PR に分かれると、そのたびに CI と Workers Builds のプレビューが走るのでまとめる
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    # CLAUDE.md のコミット規約 `type: summary` に合わせる
+    commit-message:
+      prefix: chore
